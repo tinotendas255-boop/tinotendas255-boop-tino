@@ -1,0 +1,6 @@
+{
+  "name": "RoadLink Zimbabwe - Transport & Road Safety Platform",
+  "description": "Unified Zimbabwean transport platform for real-time road news, live interactive incident maps, highway corridor routing, community hazard reporting, and transport operator intelligence.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
