@@ -554,12 +554,12 @@ export const RoadMap: React.FC<RoadMapProps> = ({
   return (
     <div
       className={`relative w-full rounded-2xl overflow-hidden border border-slate-300 shadow-2xl bg-[#e5e3df] transition-all duration-300 ${
-        isFullscreen ? 'fixed inset-0 z-[5000] h-screen rounded-none' : 'h-[640px] lg:h-[750px]'
+        isFullscreen ? 'fixed inset-0 z-[5000] h-screen rounded-none' : 'h-[520px] sm:h-[640px] lg:h-[750px]'
       }`}
     >
       {/* 1. Google Maps Authentic Navigation Directions Card Overlay */}
       {displayedRoute ? (
-        <div className="absolute top-3 left-3 z-[1100] max-w-sm sm:max-w-md w-full bg-[#FFFFFF] rounded-xl shadow-2xl border border-[#E2E8F0] overflow-hidden animate-fade-in font-sans">
+        <div className="absolute top-3 left-3 right-3 sm:right-auto sm:max-w-md bg-[#FFFFFF] rounded-xl shadow-2xl border border-[#E2E8F0] overflow-hidden animate-fade-in font-sans z-[1100] max-h-[82%] flex flex-col">
           {/* Header */}
           <div className="bg-[#2563EB] px-3.5 py-2.5 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -679,7 +679,7 @@ export const RoadMap: React.FC<RoadMapProps> = ({
         </div>
       ) : (
         /* Normal Google Search & Category Chips */
-        <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-2 max-w-sm w-full">
+        <div className="absolute top-3 left-3 right-3 sm:right-auto sm:w-96 z-[1000] flex flex-col gap-2">
           <form
             onSubmit={(e) => {
               e.preventDefault();

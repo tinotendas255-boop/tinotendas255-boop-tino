@@ -72,8 +72,8 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-[#0B1220]/75 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#FFFFFF] rounded-xl border border-[#E2E8F0] max-w-xl w-full max-h-[90vh] shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[2000] bg-[#0B1220]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-[#FFFFFF] rounded-xl border border-[#E2E8F0] max-w-xl w-full max-h-[90vh] shadow-2xl overflow-hidden flex flex-col my-auto">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex items-center justify-between">
           <div className="flex items-center gap-2">

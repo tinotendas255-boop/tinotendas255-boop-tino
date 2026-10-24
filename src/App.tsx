@@ -453,7 +453,7 @@ export default function App() {
       />
 
       {/* Main View Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-4 pb-24 md:py-6">
         {/* TAB 0: HOME DASHBOARD */}
         {activeTab === 'home' && (
           <HomeDashboard
@@ -667,20 +667,22 @@ export default function App() {
       />
 
       {/* Floating RoadLink AI Assistant Trigger Button */}
-      <div className="fixed bottom-20 md:bottom-6 right-5 z-[2500]">
+      <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-5 z-[2500]">
         <button
           onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
-          className="px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-full shadow-2xl flex items-center gap-2 border border-blue-400/30 cursor-pointer transition-all hover:scale-105"
+          className="px-3.5 py-2 sm:px-4 sm:py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-full shadow-2xl flex items-center gap-2 border border-blue-400/30 cursor-pointer transition-all hover:scale-105 active:scale-95"
+          aria-label="Open RoadLink AI Assistant"
         >
           <Bot className="w-4 h-4 text-blue-100 animate-pulse" />
-          <span>Ask RoadLink AI</span>
+          <span className="hidden xs:inline sm:inline">Ask RoadLink AI</span>
+          <span className="xs:hidden sm:hidden">AI</span>
           <span className="w-2 h-2 rounded-full bg-[#F97316] animate-ping"></span>
         </button>
       </div>
 
       {/* Floating RoadLink AI Assistant Drawer */}
       {isAiDrawerOpen && (
-        <div className="fixed bottom-24 md:bottom-20 right-4 sm:right-6 z-[3000] animate-fade-in shadow-2xl max-w-lg w-[95vw] sm:w-[500px]">
+        <div className="fixed inset-x-2 sm:inset-x-auto bottom-20 top-16 sm:top-auto sm:bottom-20 sm:right-6 sm:w-[500px] z-[3000] animate-fade-in shadow-2xl flex flex-col">
           <RoadAssistantChat
             userProfile={userProfile}
             incidents={incidents}
@@ -703,6 +705,10 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         unverifiedCount={unverifiedCount}
+        onOpenDriverLoginModal={() => setIsDriverLoginModalOpen(true)}
+        onOpenIntegrationsModal={() => setIsIntegrationsModalOpen(true)}
+        onOpenNotificationsModal={() => setIsNotificationsModalOpen(true)}
+        unreadNotificationsCount={unreadNotificationsCount}
       />
 
       {/* Footer */}

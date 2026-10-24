@@ -185,7 +185,7 @@ export const RoadAssistantChat: React.FC<RoadAssistantChatProps> = ({
   return (
     <div
       className={`flex flex-col bg-[#0B1220] border border-[#1E293B] rounded-2xl overflow-hidden shadow-2xl text-white ${
-        isFloatingDrawer ? 'h-[620px] max-h-[88vh] w-full max-w-lg' : 'h-[580px] w-full'
+        isFloatingDrawer ? 'h-full sm:h-[620px] sm:max-h-[85vh] w-full max-w-lg' : 'h-[580px] w-full'
       }`}
     >
       {/* Header */}

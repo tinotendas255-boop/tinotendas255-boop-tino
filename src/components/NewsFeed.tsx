@@ -283,25 +283,27 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
           <div className="flex items-center gap-1 p-1 bg-[#F1F5F9] rounded-xl border border-[#E2E8F0]">
             <button
               onClick={() => setViewMode('paper')}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 sm:flex-initial ${
                 viewMode === 'paper'
                   ? 'bg-[#0B1220] text-white shadow-sm'
                   : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>Newspaper Broadsheet View</span>
+              <span className="hidden sm:inline">Newspaper Broadsheet View</span>
+              <span className="sm:hidden">Broadsheet</span>
             </button>
             <button
               onClick={() => setViewMode('dashboard')}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 flex-1 sm:flex-initial ${
                 viewMode === 'dashboard'
                   ? 'bg-[#0B1220] text-white shadow-sm'
                   : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Interactive Feed & Filters</span>
+              <span className="hidden sm:inline">Interactive Feed & Filters</span>
+              <span className="sm:hidden">Cards Feed</span>
             </button>
           </div>
 
@@ -364,7 +366,8 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
               }`}
             >
               <Truck className="w-3.5 h-3.5" />
-              <span>Heavy Freight & Trucker Wire</span>
+              <span className="hidden sm:inline">Heavy Freight & Trucker Wire</span>
+              <span className="sm:hidden">Truckers</span>
             </button>
             <button
               onClick={() => setActiveAudienceFilter('bus')}
@@ -375,7 +378,8 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
               }`}
             >
               <Bus className="w-3.5 h-3.5" />
-              <span>Intercity Coach & Transit Wire</span>
+              <span className="hidden sm:inline">Intercity Coach & Transit Wire</span>
+              <span className="sm:hidden">Buses</span>
             </button>
             <button
               onClick={() => setActiveAudienceFilter('commuter')}
@@ -386,7 +390,8 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
               }`}
             >
               <Car className="w-3.5 h-3.5" />
-              <span>Citizen Commuter Wire</span>
+              <span className="hidden sm:inline">Citizen Commuter Wire</span>
+              <span className="sm:hidden">Commuters</span>
             </button>
           </div>
 

@@ -130,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenDriverLoginModal}
             title="Choose Driver Type (Truck, Bus, Citizen Commuter) or Switch Profile"
-            className={`px-2.5 py-1.5 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs ${
+            className={`px-2 sm:px-2.5 py-1.5 border rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-colors cursor-pointer shadow-xs ${
               currentDriverType === 'truck'
                 ? 'bg-[#F97316]/15 text-[#FB923C] border-[#F97316]/40 hover:bg-[#F97316]/25'
                 : currentDriverType === 'bus'
@@ -145,11 +145,11 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <Car className="w-3.5 h-3.5 text-[#2563EB]" />
             )}
-            <span className="font-extrabold text-white">
+            <span className="font-extrabold text-white text-[11px] sm:text-xs">
               {currentDriverType === 'truck'
-                ? 'Truck Driver'
+                ? 'Truck'
                 : currentDriverType === 'bus'
-                ? 'Bus Operator'
+                ? 'Bus'
                 : 'Commuter'}
             </span>
             <span className="text-[10px] text-[#64748B] font-medium hidden xl:inline">· Switch</span>
@@ -177,11 +177,11 @@ export const Header: React.FC<HeaderProps> = ({
             </select>
           </div>
 
-          {/* Press & Newsroom Publisher Portal Button */}
+          {/* Press & Newsroom Publisher Portal Button (Tablet & Desktop) */}
           <button
             onClick={() => setActiveTab('publisher')}
             title="News Media & Journalist Publisher Hub"
-            className={`px-2.5 py-1.5 border rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`hidden sm:flex px-2.5 py-1.5 border rounded-lg text-xs font-semibold items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'publisher'
                 ? 'bg-[#F97316] text-white border-[#EA580C] font-bold shadow-xs'
                 : 'bg-[#F97316]/15 hover:bg-[#F97316]/25 text-[#FB923C] border-[#F97316]/40'
@@ -194,20 +194,20 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
-          {/* Integrations Transparency Button */}
+          {/* Integrations Transparency Button (Desktop) */}
           <button
             onClick={onOpenIntegrationsModal}
             title="Integrations & Architecture Status"
-            className="px-2.5 py-1.5 bg-[#111C2E] hover:bg-[#1E293B] border border-[#1E293B] text-[#94A3B8] hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="hidden md:flex px-2.5 py-1.5 bg-[#111C2E] hover:bg-[#1E293B] border border-[#1E293B] text-[#94A3B8] hover:text-white rounded-lg text-xs font-semibold items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Server className="w-3.5 h-3.5 text-[#2563EB]" />
-            <span className="hidden md:inline">Integrations</span>
+            <span>Integrations</span>
           </button>
 
           {/* Primary CTA: Report Hazard */}
           <button
             onClick={onOpenReportModal}
-            className="px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md shadow-blue-900/30 flex items-center gap-1.5 active:scale-95"
+            className="px-2.5 sm:px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md shadow-blue-900/30 flex items-center gap-1 sm:gap-1.5 active:scale-95 flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Report Hazard</span>
