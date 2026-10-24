@@ -148,9 +148,9 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
     <div className="fixed inset-0 z-[2100] bg-slate-900/65 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-xl border border-slate-200 max-w-3xl w-full max-h-[88vh] shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#0B1220] text-white flex items-center justify-between border-b border-[#1E293B]">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-0.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#2563EB] uppercase tracking-wider mb-0.5">
               <Server className="w-3.5 h-3.5" />
               Integration Transparency & Architecture Center
             </div>
@@ -167,13 +167,13 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
         </div>
 
         {/* Tab Navigation */}
-        <div className="px-6 pt-3 border-b border-slate-200 bg-slate-50 flex items-center gap-2 text-xs">
+        <div className="px-6 pt-3 border-b border-[#E2E8F0] bg-[#F1F5F9] flex items-center gap-2 text-xs">
           <button
             onClick={() => setActiveTab('status')}
             className={`py-2 px-3 border-b-2 font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'status'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-[#64748B] hover:text-[#111827]'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -183,8 +183,8 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
             onClick={() => setActiveTab('sql_migrations')}
             className={`py-2 px-3 border-b-2 font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'sql_migrations'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-[#64748B] hover:text-[#111827]'
             }`}
           >
             <Database className="w-3.5 h-3.5" />
@@ -194,8 +194,8 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
             onClick={() => setActiveTab('env_setup')}
             className={`py-2 px-3 border-b-2 font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'env_setup'
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-[#64748B] hover:text-[#111827]'
             }`}
           >
             <Key className="w-3.5 h-3.5" />
@@ -208,8 +208,8 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
           {/* Tab 1: Integrations Status */}
           {activeTab === 'status' && (
             <div className="space-y-4">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 text-xs text-slate-700 leading-relaxed">
-                <span className="font-bold text-slate-900 block mb-0.5">Integrations Transparency Statement:</span>
+              <div className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg p-3.5 text-xs text-[#111827] leading-relaxed">
+                <span className="font-bold text-[#111827] block mb-0.5">Integrations Transparency Statement:</span>
                 RoadLink operates in strict compliance with transparency standards. Features backed by real live browser and map APIs are marked as <strong>Operational</strong>. Features relying on forthcoming external government agency feeds (e.g. ZINARA queue cameras or Meteorological Department telemetry) run in <strong>Demo / Calibrated Simulation Mode</strong> until official API agreements are activated.
               </div>
 
@@ -217,19 +217,19 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
                 {SYSTEM_INTEGRATIONS_STATUS.map((item) => (
                   <div
                     key={item.serviceId}
-                    className="p-3.5 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors bg-white flex flex-col md:flex-row md:items-start justify-between gap-3 text-xs"
+                    className="p-3.5 border border-[#E2E8F0] rounded-lg hover:border-[#2563EB]/40 transition-colors bg-[#FFFFFF] flex flex-col md:flex-row md:items-start justify-between gap-3 text-xs"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-sm">{item.name}</span>
-                        <span className="text-[11px] text-slate-400">· {item.category}</span>
+                        <span className="font-bold text-[#111827] text-sm">{item.name}</span>
+                        <span className="text-[11px] text-[#64748B]">· {item.category}</span>
                       </div>
-                      <p className="text-slate-600">{item.description}</p>
-                      <div className="text-[11px] text-slate-500 pt-1">
-                        <span className="font-semibold text-slate-700">Provider:</span> {item.provider}
+                      <p className="text-[#64748B]">{item.description}</p>
+                      <div className="text-[11px] text-[#64748B] pt-1">
+                        <span className="font-semibold text-[#111827]">Provider:</span> {item.provider}
                       </div>
                       {item.credentialsRequired && (
-                        <div className="text-[11px] text-amber-800 font-mono bg-amber-50 px-2 py-0.5 rounded inline-block mt-1">
+                        <div className="text-[11px] text-[#F97316] font-mono bg-[#F97316]/10 px-2 py-0.5 rounded inline-block mt-1">
                           Missing Config: {item.credentialsRequired}
                         </div>
                       )}
@@ -237,17 +237,17 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
 
                     <div className="flex-shrink-0">
                       {item.status === 'operational' ? (
-                        <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded text-[11px] uppercase tracking-wider flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span className="px-2.5 py-1 bg-[#16A34A]/10 text-[#16A34A] font-bold rounded text-[11px] uppercase tracking-wider flex items-center gap-1 border border-[#16A34A]/30">
+                          <CheckCircle2 className="w-3 h-3 text-[#16A34A]" />
                           OPERATIONAL
                         </span>
                       ) : item.status === 'demo_mode' ? (
-                        <span className="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded text-[11px] uppercase tracking-wider flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3 text-amber-600" />
+                        <span className="px-2.5 py-1 bg-[#F97316]/10 text-[#F97316] font-bold rounded text-[11px] uppercase tracking-wider flex items-center gap-1 border border-[#F97316]/30">
+                          <AlertTriangle className="w-3 h-3 text-[#F97316]" />
                           DEMO / SIMULATION
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold rounded text-[11px] uppercase tracking-wider">
+                        <span className="px-2.5 py-1 bg-[#F1F5F9] text-[#64748B] font-bold rounded text-[11px] uppercase tracking-wider border border-[#E2E8F0]">
                           REQUIRES CONFIG
                         </span>
                       )}
@@ -262,19 +262,19 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
           {activeTab === 'sql_migrations' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600">
+                <span className="text-xs text-[#64748B]">
                   Ready-to-deploy PostgreSQL / Cloud SQL schema script:
                 </span>
                 <button
                   onClick={handleCopySql}
-                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  {copiedSql ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedSql ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedSql ? 'Copied to Clipboard!' : 'Copy Migration Script'}
                 </button>
               </div>
 
-              <pre className="bg-slate-950 text-emerald-400 font-mono text-[11px] p-4 rounded-lg overflow-x-auto max-h-[380px] leading-relaxed border border-slate-800 select-all">
+              <pre className="bg-[#0B1220] text-[#16A34A] font-mono text-[11px] p-4 rounded-lg overflow-x-auto max-h-[380px] leading-relaxed border border-[#1E293B] select-all">
                 {SQL_MIGRATION_DDL}
               </pre>
             </div>
@@ -282,29 +282,29 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
 
           {/* Tab 3: Environment Credentials Guide */}
           {activeTab === 'env_setup' && (
-            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <h4 className="font-bold text-slate-900 text-sm mb-2">
+            <div className="space-y-4 text-xs text-[#111827] leading-relaxed">
+              <div className="p-4 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg">
+                <h4 className="font-bold text-[#111827] text-sm mb-2">
                   Activating External Highway & Telecom Feeds
                 </h4>
-                <p className="mb-3">
-                  To transition remaining simulated components to live production feeds, configure the following environment keys in <code className="bg-slate-200 px-1 py-0.5 rounded font-mono">.env</code>:
+                <p className="mb-3 text-[#64748B]">
+                  To transition remaining simulated components to live production feeds, configure the following environment keys in <code className="bg-white border border-[#E2E8F0] px-1 py-0.5 rounded font-mono text-[#111827]">.env</code>:
                 </p>
 
                 <div className="space-y-2.5 font-mono text-[11px]">
-                  <div className="p-2.5 bg-white border border-slate-200 rounded">
-                    <span className="font-bold text-slate-900 block">ZINARA_PARTNER_API_KEY</span>
-                    <span className="text-slate-500 font-sans text-xs">For live automated toll boom queue camera telemetry. Contact ZINARA Enterprise IT for mTLS certificate & API credentials.</span>
+                  <div className="p-2.5 bg-[#FFFFFF] border border-[#E2E8F0] rounded">
+                    <span className="font-bold text-[#111827] block">ZINARA_PARTNER_API_KEY</span>
+                    <span className="text-[#64748B] font-sans text-xs">For live automated toll boom queue camera telemetry. Contact ZINARA Enterprise IT for mTLS certificate & API credentials.</span>
                   </div>
 
-                  <div className="p-2.5 bg-white border border-slate-200 rounded">
-                    <span className="font-bold text-slate-900 block">ZIM_MET_API_KEY</span>
-                    <span className="text-slate-500 font-sans text-xs">Direct radar webhook from the Meteorological Services Department for Save and Runde low-lying river bridge flood warnings.</span>
+                  <div className="p-2.5 bg-[#FFFFFF] border border-[#E2E8F0] rounded">
+                    <span className="font-bold text-[#111827] block">ZIM_MET_API_KEY</span>
+                    <span className="text-[#64748B] font-sans text-xs">Direct radar webhook from the Meteorological Services Department for Save and Runde low-lying river bridge flood warnings.</span>
                   </div>
 
-                  <div className="p-2.5 bg-white border border-slate-200 rounded">
-                    <span className="font-bold text-slate-900 block">AFRICASTALKING_API_KEY / TELCO_SMS_SECRET</span>
-                    <span className="text-slate-500 font-sans text-xs">Enables emergency SMS broadcasts to drivers on 2G non-smartphone highway sections across Zimbabwe.</span>
+                  <div className="p-2.5 bg-[#FFFFFF] border border-[#E2E8F0] rounded">
+                    <span className="font-bold text-[#111827] block">AFRICASTALKING_API_KEY / TELCO_SMS_SECRET</span>
+                    <span className="text-[#64748B] font-sans text-xs">Enables emergency SMS broadcasts to drivers on 2G non-smartphone highway sections across Zimbabwe.</span>
                   </div>
                 </div>
               </div>
@@ -313,11 +313,11 @@ export const SystemIntegrationsModal: React.FC<SystemIntegrationsModalProps> = (
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+        <div className="px-6 py-3 bg-[#F1F5F9] border-t border-[#E2E8F0] flex items-center justify-between text-xs text-[#64748B]">
           <span>RoadLink Zimbabwe Architecture v1.0.0</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded font-medium cursor-pointer"
+            className="px-4 py-1.5 bg-[#0B1220] hover:bg-slate-800 text-white rounded font-medium cursor-pointer"
           >
             Done
           </button>

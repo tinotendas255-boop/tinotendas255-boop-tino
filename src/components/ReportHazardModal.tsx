@@ -160,13 +160,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[2000] bg-slate-900/65 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl border border-slate-200 max-w-xl w-full my-8 shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[2000] bg-[#0B1220]/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-[#FFFFFF] rounded-xl border border-[#E2E8F0] max-w-xl w-full my-8 shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#0B1220] text-white flex items-center justify-between border-b border-[#1E293B]">
           <div>
             <h2 className="text-base font-bold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <AlertTriangle className="w-4 h-4 text-[#F97316]" />
               Submit Road Hazard or Disruption Report
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
@@ -185,7 +185,7 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
           {/* Incident Category Picker */}
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-2">
+            <label className="block text-xs font-semibold text-[#111827] mb-2">
               Select Incident Category:
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -196,8 +196,8 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
                   onClick={() => handleCategorySelect(item.category, item.defaultSeverity)}
                   className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between h-20 ${
                     selectedCategory === item.category
-                      ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                      ? 'border-[#2563EB] bg-[#2563EB] text-white shadow-sm'
+                      : 'border-[#E2E8F0] bg-[#F1F5F9] hover:bg-slate-100 text-[#111827]'
                   }`}
                 >
                   <span className="text-lg">{item.icon}</span>
@@ -212,13 +212,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
           {/* Highway, Town, Direction */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1">
+              <label className="block text-xs font-semibold text-[#111827] mb-1">
                 Highway / Corridor:
               </label>
               <select
                 value={highway}
                 onChange={(e) => setHighway(e.target.value as ZimbabweHighway)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-2.5 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 {HIGHWAYS.map((hw) => (
                   <option key={hw} value={hw}>{hw}</option>
@@ -227,13 +227,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1">
+              <label className="block text-xs font-semibold text-[#111827] mb-1">
                 Nearest Town / City:
               </label>
               <select
                 value={town}
                 onChange={(e) => setTown(e.target.value as ZimbabweTown)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-2.5 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 {TOWNS.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -242,13 +242,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1">
+              <label className="block text-xs font-semibold text-[#111827] mb-1">
                 Direction of Flow:
               </label>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value as any)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-2.5 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="Both Directions">Both Directions Affected</option>
                 <option value="Northbound">Northbound Only</option>
@@ -261,7 +261,7 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-1">
+            <label className="block text-xs font-semibold text-[#111827] mb-1">
               Short Incident Title:
             </label>
             <input
@@ -270,21 +270,23 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
 
           {/* Location & GPS */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-slate-800">
+              <label className="text-xs font-semibold text-[#111827]">
                 Landmark, Bridge, or KM Peg:
               </label>
               <button
                 type="button"
                 onClick={handleFetchGps}
                 disabled={isLocating}
-                className="text-[11px] text-emerald-700 hover:text-emerald-900 font-semibold flex items-center gap-1 cursor-pointer"
+                className={`text-[11px] font-semibold flex items-center gap-1 cursor-pointer ${
+                  gpsLocked ? 'text-[#16A34A]' : 'text-[#2563EB] hover:text-blue-700'
+                }`}
               >
                 <Navigation className="w-3 h-3" />
                 {isLocating ? 'Acquiring GPS...' : gpsLocked ? 'GPS Locked ✓' : 'Use Current GPS'}
@@ -296,16 +298,16 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
               required
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
 
-            <div className="flex items-center justify-between pt-1.5 text-[11px] text-slate-500">
+            <div className="flex items-center justify-between pt-1.5 text-[11px] text-[#64748B]">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isApproximateLocation}
                   onChange={(e) => setIsApproximateLocation(e.target.checked)}
-                  className="rounded text-emerald-600"
+                  className="rounded text-[#2563EB]"
                 />
                 <span>General approximate area only (coordinates not exact)</span>
               </label>
@@ -314,33 +316,33 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
           </div>
 
           {/* Date and Time Observed & Ongoing status */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#F1F5F9] p-3 rounded-lg border border-[#E2E8F0]">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Date Observed:</label>
+              <label className="block text-[11px] font-semibold text-[#64748B] mb-1">Date Observed:</label>
               <input
                 type="date"
                 value={dateObserved}
                 onChange={(e) => setDateObserved(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-800"
+                className="w-full bg-[#FFFFFF] border border-[#E2E8F0] rounded px-2 py-1 text-xs text-[#111827]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Time Observed:</label>
+              <label className="block text-[11px] font-semibold text-[#64748B] mb-1">Time Observed:</label>
               <input
                 type="time"
                 value={timeObserved}
                 onChange={(e) => setTimeObserved(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-800"
+                className="w-full bg-[#FFFFFF] border border-[#E2E8F0] rounded px-2 py-1 text-xs text-[#111827]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Ongoing Status:</label>
+              <label className="block text-[11px] font-semibold text-[#64748B] mb-1">Ongoing Status:</label>
               <select
                 value={isStillOngoing ? 'yes' : 'no'}
                 onChange={(e) => setIsStillOngoing(e.target.value === 'yes')}
-                className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-800 font-semibold"
+                className="w-full bg-[#FFFFFF] border border-[#E2E8F0] rounded px-2 py-1 text-xs text-[#111827] font-semibold"
               >
                 <option value="yes">Hazard is Still Ongoing</option>
                 <option value="no">Hazard Cleared / Past Event</option>
@@ -350,7 +352,7 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
 
           {/* Severity */}
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-1">
+            <label className="block text-xs font-semibold text-[#111827] mb-1">
               Severity Level:
             </label>
             <div className="grid grid-cols-4 gap-2 text-xs">
@@ -364,9 +366,9 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
                       ? sev === 'critical'
                         ? 'bg-red-600 text-white border-red-600'
                         : sev === 'warning'
-                        ? 'bg-amber-600 text-white border-amber-600'
-                        : 'bg-slate-900 text-white border-slate-900'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#F97316] text-white border-[#F97316]'
+                        : 'bg-[#2563EB] text-white border-[#2563EB]'
+                      : 'bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0] hover:bg-slate-100'
                   }`}
                 >
                   {sev}
@@ -377,7 +379,7 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-1">
+            <label className="block text-xs font-semibold text-[#111827] mb-1">
               Description & Current Conditions:
             </label>
             <textarea
@@ -386,13 +388,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
 
           {/* Detour Advice */}
           <div>
-            <label className="block text-xs font-semibold text-slate-800 mb-1">
+            <label className="block text-xs font-semibold text-[#111827] mb-1">
               Alternative Route or Caution Advice (Optional):
             </label>
             <input
@@ -400,14 +402,14 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
               placeholder="e.g. Single-lane contraflow; use outer shoulder at 20km/h"
               value={detourAdvice}
               onChange={(e) => setDetourAdvice(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
 
           {/* Reporter Identification & Dashcam Attachment */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E2E8F0]">
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1">
+              <label className="block text-xs font-semibold text-[#111827] mb-1">
                 Your Name / Reporter Handle:
               </label>
               <input
@@ -415,12 +417,12 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
                 placeholder="e.g. Farai K. (Intercity Driver)"
                 value={reporterName}
                 onChange={(e) => setReporterName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-800 mb-1">
+              <label className="block text-xs font-semibold text-[#111827] mb-1">
                 Photo Attachment:
               </label>
               <button
@@ -428,8 +430,8 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
                 onClick={() => setPhotoAdded(!photoAdded)}
                 className={`w-full py-2 px-3 rounded-lg border text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                   photoAdded
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                    ? 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/30'
+                    : 'bg-[#F1F5F9] hover:bg-slate-100 text-[#64748B] border-[#E2E8F0]'
                 }`}
               >
                 <Camera className="w-3.5 h-3.5" />
@@ -443,13 +445,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-2 bg-[#F1F5F9] hover:bg-slate-200 text-[#64748B] rounded-lg text-xs font-semibold transition-colors cursor-pointer border border-[#E2E8F0]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-sm"
+              className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-md"
             >
               Publish Report to Network
             </button>

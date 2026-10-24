@@ -115,46 +115,46 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Profile Header Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-800 shadow-md flex-shrink-0 group">
+          <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-[#0B1220] shadow-md flex-shrink-0 group">
             <img
               src={smartHighwayHero}
               alt={userProfile.name}
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
             />
-            <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
+            <span className="absolute bottom-0 right-0 w-4 h-4 bg-[#16A34A] border-2 border-white rounded-full"></span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900">{userProfile.name}</h1>
+              <h1 className="text-xl font-bold text-[#111827]">{userProfile.name}</h1>
               {userProfile.isVerifiedDriver && (
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-[#16A34A] bg-[#16A34A]/10 border border-[#16A34A]/30 px-2 py-0.5 rounded">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
                   Verified Driver
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-500 flex items-center gap-2 mt-1 flex-wrap">
+            <div className="text-xs text-[#64748B] flex items-center gap-2 mt-1 flex-wrap">
               <span>{userProfile.phoneOrEmail}</span>
               <span>·</span>
               <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-slate-400" />
-                Base: <strong className="text-slate-700">{userProfile.baseTown}</strong>
+                <MapPin className="w-3 h-3 text-[#64748B]" />
+                Base: <strong className="text-[#111827]">{userProfile.baseTown}</strong>
               </span>
               <span>·</span>
               <span className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono inline-flex items-center gap-1 ${
                 userProfile.driverType === 'truck'
-                  ? 'bg-amber-100 text-amber-950 border border-amber-300'
+                  ? 'bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/30'
                   : userProfile.driverType === 'bus'
-                  ? 'bg-blue-100 text-blue-950 border border-blue-300'
-                  : 'bg-emerald-100 text-emerald-950 border border-emerald-300'
+                  ? 'bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/30'
+                  : 'bg-[#16A34A]/10 text-[#16A34A] border border-[#16A34A]/30'
               }`}>
                 {userProfile.driverType === 'truck' ? <Truck className="w-3 h-3" /> : userProfile.driverType === 'bus' ? <Bus className="w-3 h-3" /> : <Car className="w-3 h-3" />}
                 {userProfile.driverType === 'truck' ? 'Heavy Freight Trucker' : userProfile.driverType === 'bus' ? 'Coach Operator' : 'Citizen Commuter'}
               </span>
               {userProfile.vehicleModel && (
-                <span className="text-slate-600 hidden sm:inline">({userProfile.vehicleModel})</span>
+                <span className="text-[#64748B] hidden sm:inline">({userProfile.vehicleModel})</span>
               )}
             </div>
           </div>
@@ -165,15 +165,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <button
               type="button"
               onClick={onOpenDriverLoginModal}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-2 bg-[#F1F5F9] hover:bg-slate-200 text-[#111827] border border-[#E2E8F0] rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-emerald-600" />
+              <RefreshCw className="w-3.5 h-3.5 text-[#2563EB]" />
               <span>Switch Driver Type</span>
             </button>
           )}
           <button
             onClick={onOpenReportModal}
-            className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-md flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             <span>New Report</span>
@@ -182,13 +182,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-sm flex items-center gap-1 overflow-x-auto text-xs">
+      <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-2 shadow-sm flex items-center gap-1 overflow-x-auto text-xs">
         <button
           onClick={() => setActiveTab('submissions')}
           className={`px-4 py-2 font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'submissions'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-[#0B1220] text-white shadow-sm'
+              : 'text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
@@ -199,8 +199,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           onClick={() => setActiveTab('saved_routes')}
           className={`px-4 py-2 font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'saved_routes'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-[#0B1220] text-white shadow-sm'
+              : 'text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
           <Navigation className="w-3.5 h-3.5" />
@@ -211,8 +211,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           onClick={() => setActiveTab('bookmarks')}
           className={`px-4 py-2 font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'bookmarks'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-[#0B1220] text-white shadow-sm'
+              : 'text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
           <Bookmark className="w-3.5 h-3.5" />
@@ -223,8 +223,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           onClick={() => setActiveTab('settings')}
           className={`px-4 py-2 font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'settings'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-[#0B1220] text-white shadow-sm'
+              : 'text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
@@ -521,20 +521,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   }}
                   className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
                     driverType === 'commuter'
-                      ? 'border-emerald-500 bg-emerald-50/70 shadow-xs'
-                      : 'border-slate-200 bg-slate-50 hover:bg-white'
+                      ? 'border-[#16A34A] bg-[#16A34A]/5 shadow-xs'
+                      : 'border-[#E2E8F0] bg-[#F1F5F9] hover:bg-white'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+                    <div className="w-7 h-7 rounded-lg bg-[#16A34A] text-white flex items-center justify-center font-bold">
                       <Car className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="font-bold text-slate-900 text-xs">Citizen Commuter</div>
-                      <div className="text-[10px] font-mono text-emerald-800">Class 1 ($4 USD)</div>
+                      <div className="font-bold text-[#111827] text-xs">Citizen Commuter</div>
+                      <div className="text-[10px] font-mono text-[#16A34A]">Class 1 ($4 USD)</div>
                     </div>
                   </div>
-                  <div className="text-[11px] text-slate-600 leading-tight">
+                  <div className="text-[11px] text-[#64748B] leading-tight">
                     Urban shortcuts, pothole alerts, family road trips & daily routes.
                   </div>
                 </div>
@@ -543,34 +543,34 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
-                <label className="block font-semibold text-slate-800 mb-1">Vehicle Model / Fleet Rig:</label>
+                <label className="block font-semibold text-[#111827] mb-1">Vehicle Model / Fleet Rig:</label>
                 <input
                   type="text"
                   value={vehicleModel}
                   onChange={(e) => setVehicleModel(e.target.value)}
                   placeholder={driverType === 'truck' ? 'e.g. Freightliner Argosy 34T' : driverType === 'bus' ? 'e.g. Scania Marcopolo 75-Seater' : 'e.g. Toyota Hilux GD-6 Raider'}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-800 mb-1">Company / Fleet Association:</label>
+                <label className="block font-semibold text-[#111827] mb-1">Company / Fleet Association:</label>
                 <input
                   type="text"
                   value={companyOrFleet}
                   onChange={(e) => setCompanyOrFleet(e.target.value)}
                   placeholder={driverType === 'truck' ? 'e.g. Pioneer Freight' : driverType === 'bus' ? 'e.g. Extra City Luxury Coaches' : 'e.g. Private Motorist'}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-800 mb-1">User Role:</label>
+              <label className="block font-semibold text-[#111827] mb-1">User Role:</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-3 py-2 text-xs font-medium text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="citizen">Citizen Commuter</option>
                 <option value="verified_driver">Verified Long-Distance Driver</option>
@@ -580,25 +580,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </select>
             </div>
 
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+            <div className="p-3 bg-[#F97316]/10 border border-[#F97316]/30 rounded-lg flex items-center justify-between">
               <div>
-                <div className="font-bold text-amber-950">Accredited News Media / Reporter?</div>
-                <div className="text-[11px] text-amber-800">Sign in to the Newsroom Portal to upload official road stories.</div>
+                <div className="font-bold text-[#111827]">Accredited News Media / Reporter?</div>
+                <div className="text-[11px] text-[#64748B]">Sign in to the Newsroom Portal to upload official road stories.</div>
               </div>
               <button
                 type="button"
                 onClick={() => onNavigateTab('publisher')}
-                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold text-[11px] cursor-pointer"
+                className="px-3 py-1 bg-[#F97316] hover:bg-orange-600 text-white rounded font-bold text-[11px] cursor-pointer shadow-xs"
               >
                 Press Portal &rarr;
               </button>
             </div>
 
             <div className="pt-2 flex items-center justify-between">
-              {isSavedNotice && <span className="text-emerald-700 font-bold">Profile updated successfully ✓</span>}
+              {isSavedNotice && <span className="text-[#16A34A] font-bold">Profile updated successfully ✓</span>}
               <button
                 type="submit"
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold transition-colors cursor-pointer ml-auto"
+                className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg font-bold transition-colors cursor-pointer ml-auto shadow-md"
               >
                 Save Changes
               </button>

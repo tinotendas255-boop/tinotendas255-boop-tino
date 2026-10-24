@@ -13,6 +13,7 @@ import {
   AppNotification,
   WeatherTravelAlert,
   NewsStory,
+  RoutePreviewData,
 } from './types';
 import {
   getStoredIncidents,
@@ -76,6 +77,7 @@ export default function App() {
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState<boolean>(false);
   const [aiDrawerInitialQuery, setAiDrawerInitialQuery] = useState<string>('');
   const [selectedHighwayOnMap, setSelectedHighwayOnMap] = useState<string>('all');
+  const [activeRouteForMap, setActiveRouteForMap] = useState<RoutePreviewData | null>(null);
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' } | null>(null);
@@ -409,16 +411,23 @@ export default function App() {
     setActiveTab('map');
   };
 
+  // Active route navigation on map (Google Maps style)
+  const handleSelectRouteOnMap = (route: RoutePreviewData) => {
+    setActiveRouteForMap(route);
+    setSelectedHighwayOnMap(route.highwayCode);
+    setActiveTab('map');
+  };
+
   const activeHazards = incidents.filter((i) => i.verificationStatus !== 'resolved');
   const unverifiedCount = incidents.filter((i) => i.verificationStatus === 'reported' || i.verificationStatus === 'under_review').length;
   const unreadNotificationsCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans pb-16 md:pb-0">
+    <div className="min-h-screen bg-[#F1F5F9] text-[#111827] flex flex-col font-sans pb-16 md:pb-0">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-20 md:bottom-6 right-6 z-[3000] bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-xl text-xs font-semibold flex items-center gap-2 border border-slate-700 animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed bottom-20 md:bottom-6 right-6 z-[3000] bg-[#0B1220] text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 border border-[#E2E8F0]/20 animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
           <span>{toastMessage.text}</span>
         </div>
       )}
@@ -480,15 +489,15 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-3 text-xs">
-                <span className="text-slate-500">
-                  Showing <strong className="text-slate-900">{incidents.length}</strong> total corridor markers
+                <span className="text-[#64748B]">
+                  Showing <strong className="text-[#111827]">{incidents.length}</strong> total corridor markers
                 </span>
                 <button
                   onClick={() => {
                     setReportModalCoords(null);
                     setIsReportModalOpen(true);
                   }}
-                  className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold transition-colors cursor-pointer shadow-sm"
+                  className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg font-bold transition-colors cursor-pointer shadow-sm"
                 >
                   + Drop Report
                 </button>
@@ -500,6 +509,8 @@ export default function App() {
               onSelectIncident={(inc) => setSelectedIncident(inc)}
               onRequestReportAtCoord={handleMapClickCoord}
               selectedHighwayFilter={selectedHighwayOnMap}
+              activeRoute={activeRouteForMap}
+              onClearActiveRoute={() => setActiveRouteForMap(null)}
               onNavigateToNews={() => setActiveTab('news')}
               onAskAssistant={(query) => {
                 setAiDrawerInitialQuery(query);
@@ -659,17 +670,17 @@ export default function App() {
       <div className="fixed bottom-20 md:bottom-6 right-5 z-[2500]">
         <button
           onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
-          className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xs rounded-full shadow-2xl flex items-center gap-2 border border-emerald-400/40 cursor-pointer transition-all hover:scale-105"
+          className="px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-full shadow-2xl flex items-center gap-2 border border-blue-400/30 cursor-pointer transition-all hover:scale-105"
         >
-          <Bot className="w-4 h-4 text-emerald-200 animate-pulse" />
+          <Bot className="w-4 h-4 text-blue-100 animate-pulse" />
           <span>Ask RoadLink AI</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span className="w-2 h-2 rounded-full bg-[#F97316] animate-ping"></span>
         </button>
       </div>
 
       {/* Floating RoadLink AI Assistant Drawer */}
       {isAiDrawerOpen && (
-        <div className="fixed bottom-24 md:bottom-20 right-4 sm:right-6 z-[3000] animate-fade-in shadow-2xl max-w-sm w-[92vw]">
+        <div className="fixed bottom-24 md:bottom-20 right-4 sm:right-6 z-[3000] animate-fade-in shadow-2xl max-w-lg w-[95vw] sm:w-[500px]">
           <RoadAssistantChat
             userProfile={userProfile}
             incidents={incidents}
@@ -679,8 +690,10 @@ export default function App() {
               setIsAiDrawerOpen(false);
             }}
             onSelectHighway={(hw) => setSelectedHighwayOnMap(hw)}
+            onSelectRouteOnMap={handleSelectRouteOnMap}
             isFloatingDrawer={true}
             onClose={() => setIsAiDrawerOpen(false)}
+            initialQuery={aiDrawerInitialQuery}
           />
         </div>
       )}

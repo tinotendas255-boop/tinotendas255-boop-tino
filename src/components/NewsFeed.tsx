@@ -242,37 +242,37 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
       {/* ─────────────────────────────────────────────────────────────
           NEWSPAPER NAMEPLATE & MASTHEAD HEADER
       ───────────────────────────────────────────────────────────── */}
-      <header className="bg-white border-2 border-slate-900 rounded-2xl p-6 shadow-sm">
+      <header className="bg-[#FFFFFF] border-2 border-[#0B1220] rounded-2xl p-6 shadow-sm">
         {/* Top Gazette Weather & Status Line */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-300 text-[11px] font-mono text-slate-600">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0] text-[11px] font-mono text-[#64748B]">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-slate-900">BULAWAYO & NATIONAL MORNING EDITION</span>
+            <span className="font-bold text-[#111827]">BULAWAYO & NATIONAL MORNING EDITION</span>
             <span aria-hidden="true">·</span>
             <span>VOL. 44, NO. 108</span>
             <span aria-hidden="true">·</span>
             <span>MONDAY, OCTOBER 19, 2026</span>
           </div>
-          <div className="flex items-center gap-4 font-semibold text-slate-800">
-            <span className="flex items-center gap-1 text-emerald-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <div className="flex items-center gap-4 font-semibold text-[#111827]">
+            <span className="flex items-center gap-1 text-[#16A34A]">
+              <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
               A6 Gwanda Corridor: Clear & Flowing
             </span>
-            <span aria-hidden="true" className="text-slate-300">·</span>
+            <span aria-hidden="true" className="text-[#E2E8F0]">·</span>
             <span>Weather: 26°C Clear Sky</span>
-            <span aria-hidden="true" className="text-slate-300">·</span>
+            <span aria-hidden="true" className="text-[#E2E8F0]">·</span>
             <span>Toll Base: $4 USD / 110 ZiG</span>
           </div>
         </div>
 
         {/* Grand Broadsheet Masthead */}
-        <div className="py-5 text-center border-b-2 border-slate-900">
-          <div className="text-[10px] sm:text-xs font-bold tracking-[0.25em] text-emerald-800 uppercase mb-1">
+        <div className="py-5 text-center border-b-2 border-[#0B1220]">
+          <div className="text-[10px] sm:text-xs font-bold tracking-[0.25em] text-[#2563EB] uppercase mb-1">
             ZIMBABWE NATIONAL TRANSPORT PRESS & OFFICIAL MOTORIST DISPATCH
           </div>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight text-slate-950 uppercase select-none">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight text-[#111827] uppercase select-none">
             The Highway Gazette
           </h1>
-          <p className="text-xs sm:text-sm font-serif italic text-slate-600 mt-1 max-w-2xl mx-auto">
+          <p className="text-xs sm:text-sm font-serif italic text-[#64748B] mt-1 max-w-2xl mx-auto">
             "Connecting People. Reporting Highway Truths. Keeping Zimbabwe Moving Safely."
           </p>
         </div>
@@ -280,13 +280,13 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
         {/* View Mode Bar & Quick Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
           {/* Dual Edition View Switcher */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl">
+          <div className="flex items-center gap-1 p-1 bg-[#F1F5F9] rounded-xl border border-[#E2E8F0]">
             <button
               onClick={() => setViewMode('paper')}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                 viewMode === 'paper'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-700 hover:text-slate-900'
+                  ? 'bg-[#0B1220] text-white shadow-sm'
+                  : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -296,8 +296,8 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
               onClick={() => setViewMode('dashboard')}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                 viewMode === 'dashboard'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-700 hover:text-slate-900'
+                  ? 'bg-[#0B1220] text-white shadow-sm'
+                  : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -310,7 +310,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
             {onNavigateTab && (
               <button
                 onClick={() => onNavigateTab('publisher')}
-                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-1.5 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
                 title="Sign in or register your media house to upload stories"
               >
                 <PenTool className="w-3.5 h-3.5" />
@@ -320,9 +320,9 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
 
             <button
               onClick={() => setIsTipModalOpen(true)}
-              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
             >
-              <Radio className="w-3.5 h-3.5 text-emerald-200" />
+              <Radio className="w-3.5 h-3.5 text-blue-200" />
               <span>Submit Press Tip</span>
             </button>
 
@@ -331,9 +331,9 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                 setViewMode('dashboard');
                 setActiveCategory('bookmarked');
               }}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-slate-200 text-[#111827] text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 border border-[#E2E8F0]"
             >
-              <Bookmark className="w-3.5 h-3.5 text-slate-600" />
+              <Bookmark className="w-3.5 h-3.5 text-[#64748B]" />
               <span>Saved Clippings ({bookmarkedIds.length})</span>
             </button>
           </div>

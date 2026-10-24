@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { RoadIncident, IncidentSeverity, IncidentType } from '../types';
+import { RoadIncident, IncidentSeverity, IncidentType, RoutePreviewData } from '../types';
+import { ROUTE_PREVIEWS, detectRoutePreviewFromQuery } from '../utils/aiRoadKnowledge';
 import {
   Search,
   Navigation,
@@ -18,11 +19,16 @@ import {
   Eye,
   Sliders,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Shield,
   Activity,
   Car,
   Fuel,
-  Info
+  Info,
+  X,
+  Coins,
+  ArrowRight
 } from 'lucide-react';
 
 interface RoadMapProps {
@@ -30,6 +36,8 @@ interface RoadMapProps {
   onSelectIncident: (incident: RoadIncident) => void;
   onRequestReportAtCoord?: (coords: [number, number]) => void;
   selectedHighwayFilter?: string;
+  activeRoute?: RoutePreviewData | null;
+  onClearActiveRoute?: () => void;
   onNavigateToNews?: (storyId?: string) => void;
   onAskAssistant?: (query: string) => void;
 }
@@ -54,6 +62,8 @@ export const RoadMap: React.FC<RoadMapProps> = ({
   onSelectIncident,
   onRequestReportAtCoord,
   selectedHighwayFilter = 'all',
+  activeRoute = null,
+  onClearActiveRoute,
   onNavigateToNews,
   onAskAssistant,
 }) => {
@@ -63,6 +73,11 @@ export const RoadMap: React.FC<RoadMapProps> = ({
   const trafficLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const corridorsLayerRef = useRef<L.LayerGroup | null>(null);
+  const activeRouteLayerRef = useRef<L.LayerGroup | null>(null);
+
+  // Active Route Navigation state (just like Google Maps)
+  const [displayedRoute, setDisplayedRoute] = useState<RoutePreviewData | null>(activeRoute);
+  const [showRouteSteps, setShowRouteSteps] = useState<boolean>(false);
 
   // Google Maps Layer & View Settings (Defaults to normal view with Satellite Imagery)
   const [mapType, setMapType] = useState<GoogleMapType>('hybrid');
@@ -80,6 +95,13 @@ export const RoadMap: React.FC<RoadMapProps> = ({
   const [showFilterDrawer, setShowFilterDrawer] = useState<boolean>(false);
   const [showLayersDropdown, setShowLayersDropdown] = useState<boolean>(false);
   const [gpsStatus, setGpsStatus] = useState<string>('');
+
+  // Sync displayedRoute when prop updates
+  useEffect(() => {
+    if (activeRoute) {
+      setDisplayedRoute(activeRoute);
+    }
+  }, [activeRoute]);
 
   // Update highway filter when prop changes
   useEffect(() => {
@@ -137,9 +159,11 @@ export const RoadMap: React.FC<RoadMapProps> = ({
 
     const corridorsGroup = L.layerGroup().addTo(map);
     const markersGroup = L.layerGroup().addTo(map);
+    const routeGroup = L.layerGroup().addTo(map);
 
     corridorsLayerRef.current = corridorsGroup;
     markersLayerRef.current = markersGroup;
+    activeRouteLayerRef.current = routeGroup;
     mapInstanceRef.current = map;
 
     // Click map to report incident at coordinates
@@ -289,6 +313,98 @@ export const RoadMap: React.FC<RoadMapProps> = ({
       line.addTo(corridorsLayerRef.current!);
     });
   }, []);
+
+  // Render Active Route with Google-Maps navigation line & pins
+  useEffect(() => {
+    if (!activeRouteLayerRef.current || !mapInstanceRef.current) return;
+    const layer = activeRouteLayerRef.current;
+    layer.clearLayers();
+
+    if (!displayedRoute) return;
+
+    // 1. Google Maps route casing (dark blue border)
+    L.polyline(displayedRoute.waypoints, {
+      color: '#1557b0',
+      weight: 10,
+      opacity: 0.95,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(layer);
+
+    // 2. Google Maps royal blue route line
+    L.polyline(displayedRoute.waypoints, {
+      color: '#1a73e8',
+      weight: 6,
+      opacity: 1,
+      lineCap: 'round',
+      lineJoin: 'round',
+    }).addTo(layer);
+
+    // 3. Origin Marker A (Green pin)
+    const startCoord = displayedRoute.waypoints[0];
+    if (startCoord) {
+      const originIcon = L.divIcon({
+        className: 'google-nav-origin-pin',
+        html: `
+          <div style="width: 34px; height: 34px; background: #34a853; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 15px; font-family: Roboto, sans-serif;">
+            A
+          </div>
+        `,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      });
+      L.marker(startCoord, { icon: originIcon })
+        .bindTooltip(`<strong>Start:</strong> ${displayedRoute.origin}`, { permanent: false, direction: 'top' })
+        .addTo(layer);
+    }
+
+    // 4. Destination Marker B (Red Google pin)
+    const destCoord = displayedRoute.waypoints[displayedRoute.waypoints.length - 1];
+    if (destCoord) {
+      const destIcon = L.divIcon({
+        className: 'google-nav-dest-pin',
+        html: `
+          <div style="position: relative; width: 36px; height: 46px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));">
+            <svg viewBox="0 0 32 42" width="36" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 0C7.163 0 0 7.163 0 16C0 27.2 16 42 16 42C16 42 32 27.2 32 16C32 7.163 24.837 0 16 0Z" fill="#ea4335"/>
+              <circle cx="16" cy="15" r="9" fill="#FFFFFF"/>
+            </svg>
+            <div style="position: absolute; top: 8px; left: 0; width: 36px; text-align: center; color: #ea4335; font-size: 14px; font-weight: 900; font-family: Roboto, sans-serif;">
+              B
+            </div>
+          </div>
+        `,
+        iconSize: [36, 46],
+        iconAnchor: [18, 46],
+      });
+      L.marker(destCoord, { icon: destIcon })
+        .bindTooltip(`<strong>Destination:</strong> ${displayedRoute.destination}`, { permanent: false, direction: 'top' })
+        .addTo(layer);
+    }
+
+    // 5. Toll Plazas on the route
+    displayedRoute.tollPlazas.forEach((toll) => {
+      const tollIcon = L.divIcon({
+        className: 'google-nav-toll-pin',
+        html: `
+          <div style="background: #f9ab00; border: 2px solid #ffffff; border-radius: 6px; padding: 3px 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.35); color: #202124; font-size: 11px; font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 3px;">
+            <span>🪙 Toll ($${displayedRoute.tollFeeUsd})</span>
+          </div>
+        `,
+        iconSize: [95, 26],
+        iconAnchor: [47, 13],
+      });
+      L.marker([toll.lat, toll.lng], { icon: tollIcon })
+        .bindTooltip(`<strong>${toll.name}</strong><br/>Tariff: $${displayedRoute.tollFeeUsd} USD / ${displayedRoute.tollFeeZiG} ZiG`, { direction: 'top' })
+        .addTo(layer);
+    });
+
+    // 6. Fit bounds to the route waypoints!
+    if (displayedRoute.waypoints.length > 0) {
+      const bounds = L.latLngBounds(displayedRoute.waypoints);
+      mapInstanceRef.current.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
+    }
+  }, [displayedRoute]);
 
   // Google Maps SVG Marker Icon Generator
   const createGooglePinIcon = (severity: IncidentSeverity, category: string, isResolved: boolean) => {
@@ -441,121 +557,256 @@ export const RoadMap: React.FC<RoadMapProps> = ({
         isFullscreen ? 'fixed inset-0 z-[5000] h-screen rounded-none' : 'h-[640px] lg:h-[750px]'
       }`}
     >
-      {/* 1. Google Maps Authentic Top Left Search & Directions Card */}
-      <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-2 max-w-sm w-full">
-        <div className="bg-white rounded-lg shadow-md border border-slate-200/80 px-3 py-2 flex items-center gap-2 text-slate-800">
-          <Search className="w-5 h-5 text-slate-500 flex-shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Google Maps Zimbabwe..."
-            className="flex-1 text-sm bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-sans"
-          />
-          {searchQuery && (
+      {/* 1. Google Maps Authentic Navigation Directions Card Overlay */}
+      {displayedRoute ? (
+        <div className="absolute top-3 left-3 z-[1100] max-w-sm sm:max-w-md w-full bg-[#FFFFFF] rounded-xl shadow-2xl border border-[#E2E8F0] overflow-hidden animate-fade-in font-sans">
+          {/* Header */}
+          <div className="bg-[#2563EB] px-3.5 py-2.5 text-white flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                <Navigation className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="font-bold text-xs tracking-wide uppercase">Google Maps Navigation</span>
+            </div>
             <button
-              onClick={() => setSearchQuery('')}
-              className="text-xs text-slate-400 hover:text-slate-600 px-1"
+              onClick={() => {
+                setDisplayedRoute(null);
+                if (onClearActiveRoute) onClearActiveRoute();
+              }}
+              className="text-white/80 hover:text-white p-1 rounded-md hover:bg-white/15 transition-colors cursor-pointer"
+              title="Close Directions & Return to Map"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
+          </div>
+
+          {/* Route Endpoints */}
+          <div className="p-3 bg-[#F1F5F9] border-b border-[#E2E8F0] space-y-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">
+                A
+              </div>
+              <div className="flex-1 text-xs font-semibold text-[#111827] bg-[#FFFFFF] border border-[#E2E8F0] px-2.5 py-1.5 rounded-lg truncate shadow-xs">
+                {displayedRoute.origin}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-sm">
+                B
+              </div>
+              <div className="flex-1 text-xs font-semibold text-[#111827] bg-[#FFFFFF] border border-[#E2E8F0] px-2.5 py-1.5 rounded-lg truncate shadow-xs">
+                {displayedRoute.destination}
+              </div>
+            </div>
+          </div>
+
+          {/* Live ETA, Highway, and Traffic Stats */}
+          <div className="p-3 bg-[#FFFFFF] space-y-2">
+            <div className="flex items-baseline justify-between gap-2">
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl sm:text-2xl font-black text-[#16A34A]">
+                    {Math.floor(displayedRoute.estMinutes / 60)} hr {displayedRoute.estMinutes % 60} min
+                  </span>
+                  <span className="text-xs text-[#64748B] font-semibold font-mono">({displayedRoute.distanceKm} km)</span>
+                </div>
+                <div className="text-xs text-[#64748B] font-medium mt-0.5 flex items-center gap-1.5">
+                  <span className="font-bold text-[#2563EB]">{displayedRoute.highwayCode}</span>
+                  <span>•</span>
+                  <span>{displayedRoute.fastestRouteLabel || 'Fastest route now'}</span>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#F97316] bg-[#F97316]/10 border border-[#F97316]/30 px-2 py-1 rounded-md">
+                  <Coins className="w-3 h-3 text-[#F97316]" />
+                  ${displayedRoute.tollFeeUsd} USD Toll
+                </span>
+              </div>
+            </div>
+
+            {/* Road conditions pill */}
+            <div className="text-[11px] text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg p-2 flex items-center justify-between gap-2">
+              <span className="truncate">🛣️ {displayedRoute.roadCondition.split('·')[0]}</span>
+              <span className="font-semibold text-[#16A34A] flex-shrink-0">✓ No Roadblocks</span>
+            </div>
+          </div>
+
+          {/* Actions & Steps */}
+          <div className="px-3 pb-3 bg-[#FFFFFF] flex items-center justify-between border-t border-[#E2E8F0] pt-2.5 text-xs">
+            {displayedRoute.steps && displayedRoute.steps.length > 0 && (
+              <button
+                onClick={() => setShowRouteSteps(!showRouteSteps)}
+                className="text-[#2563EB] hover:text-[#1D4ED8] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <span>{showRouteSteps ? 'Hide steps' : `View ${displayedRoute.steps.length} Route Steps`}</span>
+                {showRouteSteps ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+            )}
+
+            {onAskAssistant && (
+              <button
+                onClick={() => onAskAssistant(`Tell me more about the route to ${displayedRoute.destination}`)}
+                className="text-slate-600 hover:text-slate-900 font-medium flex items-center gap-1 cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Ask AI Details</span>
+              </button>
+            )}
+          </div>
+
+          {/* Turn-by-turn maneuvers drawer */}
+          {showRouteSteps && displayedRoute.steps && (
+            <div className="max-h-48 overflow-y-auto p-3 bg-slate-50 border-t border-slate-200 space-y-2 text-xs">
+              {displayedRoute.steps.map((st, i) => (
+                <div key={i} className="flex items-start gap-2.5 text-slate-700">
+                  <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-800 text-[10px] flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1">
+                    <div className="leading-snug">{st.instruction}</div>
+                    {st.distanceKm && (
+                      <span className="text-[10px] font-mono font-semibold text-emerald-600">
+                        +{st.distanceKm} km
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-          <div className="h-5 w-px bg-slate-200 mx-1"></div>
-          <button
-            onClick={() => {
-              if (onAskAssistant) {
-                onAskAssistant("What's the best route to take to Gwanda?");
+        </div>
+      ) : (
+        /* Normal Google Search & Category Chips */
+        <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-2 max-w-sm w-full">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const detected = detectRoutePreviewFromQuery(searchQuery);
+              if (detected) {
+                setDisplayedRoute(detected);
               }
             }}
-            title="Directions / Route Assistant"
-            className="p-1.5 bg-[#1a73e8] hover:bg-blue-700 text-white rounded-full transition-colors cursor-pointer flex-shrink-0"
+            className="bg-white rounded-lg shadow-md border border-slate-200/80 px-3 py-2 flex items-center gap-2 text-slate-800"
           >
-            <Navigation className="w-4 h-4" />
-          </button>
+            <Search className="w-5 h-5 text-slate-500 flex-shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search or ask route (e.g. Gwanda, Victoria Falls)..."
+              className="flex-1 text-sm bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-sans"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-xs text-slate-400 hover:text-slate-600 px-1"
+              >
+                ✕
+              </button>
+            )}
+            <div className="h-5 w-px bg-slate-200 mx-1"></div>
+            <button
+              type="button"
+              onClick={() => {
+                const detected = detectRoutePreviewFromQuery(searchQuery || 'Gwanda');
+                if (detected) {
+                  setDisplayedRoute(detected);
+                } else if (onAskAssistant) {
+                  onAskAssistant("What's the best route to take to Gwanda?");
+                }
+              }}
+              title="Directions / Route Assistant"
+              className="p-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-full transition-colors cursor-pointer flex-shrink-0 shadow-sm"
+            >
+              <Navigation className="w-4 h-4" />
+            </button>
+          </form>
+
+          {/* Quick Google Category Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+            {/* Satellite View Direct Toggle */}
+            <button
+              onClick={() => handleMapTypeChange(mapType === 'hybrid' || mapType === 'satellite' ? 'roadmap' : 'hybrid')}
+              className={`px-3 py-1.5 rounded-full font-medium shadow-sm border whitespace-nowrap flex items-center gap-1.5 cursor-pointer transition-all ${
+                mapType === 'hybrid' || mapType === 'satellite'
+                  ? 'bg-[#2563EB] text-white border-[#2563EB] font-bold shadow-blue-500/20'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              {mapType === 'hybrid' || mapType === 'satellite' ? '🛰️ Satellite ON' : '🛰️ Satellite'}
+            </button>
+
+            {/* 3D Tilt Direct Toggle */}
+            <button
+              onClick={() => setIs3dRealisticTilt(!is3dRealisticTilt)}
+              className={`px-3 py-1.5 rounded-full font-medium shadow-sm border whitespace-nowrap flex items-center gap-1.5 cursor-pointer transition-all ${
+                is3dRealisticTilt
+                  ? 'bg-[#0B1220] text-white border-[#0B1220] font-bold'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              {is3dRealisticTilt ? '📐 3D Tilt ON' : '📐 3D Tilt'}
+            </button>
+
+            {/* Direct Google Maps Route to Gwanda */}
+            <button
+              onClick={() => {
+                setDisplayedRoute(ROUTE_PREVIEWS.gwanda);
+              }}
+              className="px-3 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-full font-bold shadow-sm whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+            >
+              <Navigation className="w-3.5 h-3.5 text-white" />
+              Route to Gwanda (A6)
+            </button>
+
+            {/* Route to Victoria Falls */}
+            <button
+              onClick={() => {
+                setDisplayedRoute(ROUTE_PREVIEWS.victoria_falls);
+              }}
+              className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 rounded-full font-medium shadow-sm border border-slate-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+            >
+              <Navigation className="w-3.5 h-3.5 text-[#2563EB]" />
+              Route to Vic Falls (A8)
+            </button>
+
+            <button
+              onClick={() => handleJumpToTown(BULAWAYO_CENTER, 13, 'Bulawayo')}
+              className={`px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 rounded-full font-medium shadow-sm border border-slate-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                selectedTown === 'Bulawayo' ? 'ring-2 ring-[#2563EB] text-[#2563EB] font-bold' : ''
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5 text-[#ea4335]" />
+              Bulawayo Hub
+            </button>
+
+            <button
+              onClick={handleToggleTraffic}
+              className={`px-3 py-1.5 rounded-full font-medium shadow-sm border whitespace-nowrap flex items-center gap-1.5 cursor-pointer transition-colors ${
+                showTraffic
+                  ? 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/30 font-bold'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-[#16A34A]" />
+              {showTraffic ? 'Traffic ON' : 'Traffic'}
+            </button>
+
+            <button
+              onClick={() => setShowFilterDrawer(!showFilterDrawer)}
+              className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 rounded-full font-medium shadow-sm border border-slate-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sliders className="w-3.5 h-3.5 text-slate-500" />
+              Filter Incidents ({incidents.length})
+            </button>
+          </div>
         </div>
-
-        {/* Quick Google Category Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-          {/* Satellite View Direct Toggle */}
-          <button
-            onClick={() => handleMapTypeChange(mapType === 'hybrid' || mapType === 'satellite' ? 'roadmap' : 'hybrid')}
-            className={`px-3 py-1.5 rounded-full font-medium shadow-sm border whitespace-nowrap flex items-center gap-1.5 cursor-pointer transition-all ${
-              mapType === 'hybrid' || mapType === 'satellite'
-                ? 'bg-blue-600 text-white border-blue-700 font-bold shadow-blue-500/20'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            {mapType === 'hybrid' || mapType === 'satellite' ? '🛰️ Satellite ON' : '🛰️ Satellite'}
-          </button>
-
-          {/* 3D Tilt Direct Toggle */}
-          <button
-            onClick={() => setIs3dRealisticTilt(!is3dRealisticTilt)}
-            className={`px-3 py-1.5 rounded-full font-medium shadow-sm border whitespace-nowrap flex items-center gap-1.5 cursor-pointer transition-all ${
-              is3dRealisticTilt
-                ? 'bg-indigo-600 text-white border-indigo-700 font-bold'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5" />
-            {is3dRealisticTilt ? '📐 3D Tilt ON' : '📐 3D Tilt'}
-          </button>
-
-          {/* Ask AI Route to Gwanda */}
-          <button
-            onClick={() => {
-              if (onAskAssistant) {
-                onAskAssistant("What's the best route to take to Gwanda?");
-              } else {
-                handleJumpToTown([-20.9333, 29.0000], 13, 'Gwanda');
-              }
-            }}
-            className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-full font-bold shadow-sm whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            Route to Gwanda?
-          </button>
-
-          <button
-            onClick={() => handleJumpToTown(BULAWAYO_CENTER, 13, 'Bulawayo')}
-            className={`px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 rounded-full font-medium shadow-sm border border-slate-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-              selectedTown === 'Bulawayo' ? 'ring-2 ring-[#1a73e8] text-[#1a73e8] font-bold' : ''
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5 text-[#ea4335]" />
-            Bulawayo Hub
-          </button>
-
-          <button
-            onClick={() => handleJumpToTown([-20.9333, 29.0000], 13, 'Gwanda')}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 rounded-full font-medium shadow-sm border border-slate-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
-          >
-            <Navigation className="w-3.5 h-3.5 text-[#1a73e8]" />
-            Gwanda (A6)
-          </button>
-
-          <button
-            onClick={handleToggleTraffic}
-            className={`px-3 py-1.5 rounded-full font-medium shadow-sm border whitespace-nowrap flex items-center gap-1.5 cursor-pointer transition-colors ${
-              showTraffic
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5 text-emerald-600" />
-            {showTraffic ? 'Traffic ON' : 'Traffic'}
-          </button>
-
-          <button
-            onClick={() => setShowFilterDrawer(!showFilterDrawer)}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 rounded-full font-medium shadow-sm border border-slate-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
-          >
-            <Sliders className="w-3.5 h-3.5 text-slate-500" />
-            Filter Incidents ({incidents.length})
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Filter Drawer Card (Optional dropdown) */}
       {showFilterDrawer && (

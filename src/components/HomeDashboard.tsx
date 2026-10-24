@@ -140,7 +140,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     },
     commuter: {
       badge: '🚗 CITIZEN COMMUTER & PRIVATE MOTORIST · CLASS 1',
-      badgeClass: 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50',
+      badgeClass: 'bg-[#2563EB]/25 text-[#60A5FA] border-[#2563EB]/50',
       heroTitle: `Salibonani, ${userProfile.name}.`,
       heroSubtitle: `Urban traffic shortcuts, Ascot flyover & Luveve resurfacing updates, light vehicle toll fees ($4 / 110 ZiG), and emergency roadside assistance.`,
       searchPlaceholder: `Search Bulawayo corridors (A5, A8), Ascot flyover, Plumtree, or hazard keywords...`,
@@ -149,8 +149,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       fleetTag: userProfile.companyOrFleet || 'Private Motorist',
       statusLabel: 'VERIFIED MOTORIST',
       icon: Car,
-      avatarBorder: 'border-emerald-400',
-      btnTheme: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+      avatarBorder: 'border-[#2563EB]',
+      btnTheme: 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white',
     },
   }[driverType];
 
@@ -230,19 +230,19 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40">
                     <PersonaIcon className="w-6 h-6 text-white" />
                   </div>
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-slate-950 rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#16A34A] border-2 border-slate-950 rounded-full" />
                 </div>
                 <div className="text-left pr-1">
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-sm text-white">{userProfile.name}</span>
-                    <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[9px] font-bold">
+                    <span className="px-1.5 py-0.2 bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40 rounded text-[9px] font-bold">
                       {personaConfig.statusLabel}
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-300 mt-0.5 font-medium truncate max-w-[190px]">
                     {personaConfig.fleetTag}
                   </div>
-                  <div className="text-[10px] text-amber-300/90 font-mono truncate max-w-[190px]">
+                  <div className="text-[10px] text-[#FB923C] font-mono truncate max-w-[190px]">
                     {personaConfig.vehicleTag}
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     <button
                       type="button"
                       onClick={onOpenDriverLoginModal}
-                      className="text-emerald-400 hover:text-emerald-300 font-bold underline cursor-pointer"
+                      className="text-[#60A5FA] hover:text-white font-bold underline cursor-pointer"
                     >
                       Login Modal &rarr;
                     </button>
@@ -268,7 +268,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     onClick={() => handleQuickSwitchDriver('truck')}
                     className={`py-1 px-1.5 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer flex items-center justify-center gap-1 ${
                       driverType === 'truck'
-                        ? 'bg-amber-500 text-slate-950 shadow-md ring-1 ring-white/50'
+                        ? 'bg-[#F97316] text-white shadow-md ring-1 ring-white/50'
                         : 'bg-white/10 hover:bg-white/20 text-slate-200'
                     }`}
                     title="Switch to Heavy Freight & Long-Haul Truck Driver"
@@ -281,7 +281,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     onClick={() => handleQuickSwitchDriver('bus')}
                     className={`py-1 px-1.5 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer flex items-center justify-center gap-1 ${
                       driverType === 'bus'
-                        ? 'bg-blue-600 text-white shadow-md ring-1 ring-white/50'
+                        ? 'bg-[#2563EB] text-white shadow-md ring-1 ring-white/50'
                         : 'bg-white/10 hover:bg-white/20 text-slate-200'
                     }`}
                     title="Switch to Intercity Coach & Bus Operator"
@@ -294,7 +294,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     onClick={() => handleQuickSwitchDriver('commuter')}
                     className={`py-1 px-1.5 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer flex items-center justify-center gap-1 ${
                       driverType === 'commuter'
-                        ? 'bg-emerald-600 text-white shadow-md ring-1 ring-white/50'
+                        ? 'bg-[#2563EB] text-white shadow-md ring-1 ring-white/50'
                         : 'bg-white/10 hover:bg-white/20 text-slate-200'
                     }`}
                     title="Switch to Citizen Commuter & Motorist"
@@ -316,7 +316,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 placeholder={personaConfig.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-slate-900/80 backdrop-blur-md border border-white/30 rounded-xl text-sm font-medium text-white placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-all shadow-lg"
+                className="w-full pl-11 pr-4 py-3 bg-[#0B1220]/90 backdrop-blur-md border border-[#334155] rounded-xl text-sm font-medium text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all shadow-lg"
               />
             </div>
 
@@ -336,24 +336,24 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
             {/* Live Search Results Dropdown */}
             {searchQuery.trim() && (
-              <div className="mt-2 bg-white text-slate-900 rounded-xl p-3 shadow-xl border border-slate-200 text-xs space-y-2">
-                <div className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">
+              <div className="mt-2 bg-[#FFFFFF] text-[#111827] rounded-xl p-3 shadow-xl border border-[#E2E8F0] text-xs space-y-2">
+                <div className="font-semibold text-[#64748B] uppercase tracking-wider text-[10px]">
                   Matching Incidents & Roads ({searchResults.length})
                 </div>
                 {searchResults.length === 0 ? (
-                  <div className="text-slate-500 py-2">No matching hazards or roads found. Try searching by highway code (e.g. A4, A5).</div>
+                  <div className="text-[#64748B] py-2">No matching hazards or roads found. Try searching by highway code (e.g. A4, A5).</div>
                 ) : (
                   searchResults.map((item) => (
                     <div
                       key={item.id}
                       onClick={() => onSelectIncident(item)}
-                      className="p-2 hover:bg-slate-50 rounded cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-slate-200"
+                      className="p-2 hover:bg-[#F1F5F9] rounded cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-[#E2E8F0]"
                     >
                       <div>
-                        <div className="font-bold text-slate-900">{item.title}</div>
-                        <div className="text-slate-500 text-[11px]">{item.highway} · {item.locationName}</div>
+                        <div className="font-bold text-[#111827]">{item.title}</div>
+                        <div className="text-[#64748B] text-[11px]">{item.highway} · {item.locationName}</div>
                       </div>
-                      <span className="text-emerald-700 font-semibold text-[11px]">View &rarr;</span>
+                      <span className="text-[#2563EB] font-semibold text-[11px]">View &rarr;</span>
                     </div>
                   ))
                 )}
@@ -367,7 +367,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               onClick={() => onNavigateTab('routes')}
               className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between"
             >
-              <Navigation className="w-4 h-4 text-emerald-400 mb-1.5" />
+              <Navigation className="w-4 h-4 text-[#60A5FA] mb-1.5" />
               <span className="text-xs font-bold text-white leading-tight">Check Corridor</span>
               <span className="text-[10px] text-slate-400">Tolls & distances</span>
             </button>
@@ -376,7 +376,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               onClick={() => onNavigateTab('map')}
               className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between"
             >
-              <Compass className="w-4 h-4 text-blue-400 mb-1.5" />
+              <Compass className="w-4 h-4 text-[#2563EB] mb-1.5" />
               <span className="text-xs font-bold text-white leading-tight">Explore Map</span>
               <span className="text-[10px] text-slate-400">Live corridor pins</span>
             </button>
@@ -385,7 +385,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               onClick={() => onNavigateTab('news')}
               className="p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between"
             >
-              <Newspaper className="w-4 h-4 text-amber-400 mb-1.5" />
+              <Newspaper className="w-4 h-4 text-[#F97316] mb-1.5" />
               <span className="text-xs font-bold text-white leading-tight">Road Gazette</span>
               <span className="text-[10px] text-slate-400">Driver advisories</span>
             </button>
@@ -491,80 +491,80 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         </div>
       ) : (
         /* CITIZEN COMMUTER TELEMETRY */
-        <div className="bg-emerald-950 text-white rounded-2xl p-5 border border-emerald-800/80 shadow-md space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-800/60 pb-3 text-xs">
+        <div className="bg-[#0B1220] text-white rounded-2xl p-5 border border-[#1E293B] shadow-md space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E293B] pb-3 text-xs">
             <div className="flex items-center gap-2">
-              <Car className="w-4 h-4 text-emerald-400" />
-              <span className="font-bold text-emerald-200 uppercase tracking-wide text-xs">
+              <Car className="w-4 h-4 text-[#2563EB]" />
+              <span className="font-bold text-slate-100 uppercase tracking-wide text-xs">
                 Citizen Commuter & Family Travel Telemetry
               </span>
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-emerald-300 font-mono">
+            <div className="flex items-center gap-3 text-[11px] text-slate-300 font-mono">
               <span>Class 1 Light Motor Vehicles</span>
               <span>·</span>
-              <span className="text-emerald-400 font-bold">✓ Dual Currency (USD / ZiG)</span>
+              <span className="text-[#16A34A] font-bold">✓ Dual Currency (USD / ZiG)</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 bg-emerald-900/40 rounded-xl border border-emerald-700/50 space-y-1">
-              <div className="text-[10px] font-mono text-emerald-300/80 uppercase">Light Vehicle Toll Fee</div>
-              <div className="text-sm font-bold text-emerald-400 font-mono">$4.00 USD / 110 ZiG</div>
-              <div className="text-[11px] text-emerald-200/90">Automated fast boom lanes</div>
+            <div className="p-3 bg-[#111C2E] rounded-xl border border-[#1E293B] space-y-1">
+              <div className="text-[10px] font-mono text-[#94A3B8] uppercase">Light Vehicle Toll Fee</div>
+              <div className="text-sm font-bold text-[#60A5FA] font-mono">$4.00 USD / 110 ZiG</div>
+              <div className="text-[11px] text-slate-400">Automated fast boom lanes</div>
             </div>
 
-            <div className="p-3 bg-emerald-900/40 rounded-xl border border-emerald-700/50 space-y-1">
-              <div className="text-[10px] font-mono text-emerald-300/80 uppercase">Urban Road Resurfacing</div>
+            <div className="p-3 bg-[#111C2E] rounded-xl border border-[#1E293B] space-y-1">
+              <div className="text-[10px] font-mono text-[#94A3B8] uppercase">Urban Road Resurfacing</div>
               <div className="text-sm font-bold text-white">Ascot & Luveve Phase III Open</div>
-              <div className="text-[11px] text-emerald-200/90">Zero detour delays in Bulawayo</div>
+              <div className="text-[11px] text-slate-400">Zero detour delays in Bulawayo</div>
             </div>
 
-            <div className="p-3 bg-emerald-900/40 rounded-xl border border-emerald-700/50 space-y-1">
-              <div className="text-[10px] font-mono text-emerald-300/80 uppercase">Local Driving Weather</div>
+            <div className="p-3 bg-[#111C2E] rounded-xl border border-[#1E293B] space-y-1">
+              <div className="text-[10px] font-mono text-[#94A3B8] uppercase">Local Driving Weather</div>
               <div className="text-sm font-bold text-white">High Visibility · Dry Asphalt</div>
-              <div className="text-[11px] text-emerald-200/90">Safety Adhesion Index 94%</div>
+              <div className="text-[11px] text-slate-400">Safety Adhesion Index 94%</div>
             </div>
 
-            <div className="p-3 bg-emerald-900/40 rounded-xl border border-emerald-700/50 space-y-1">
-              <div className="text-[10px] font-mono text-emerald-300/80 uppercase">Weekend Scenic Trips</div>
+            <div className="p-3 bg-[#111C2E] rounded-xl border border-[#1E293B] space-y-1">
+              <div className="text-[10px] font-mono text-[#94A3B8] uppercase">Weekend Scenic Trips</div>
               <div className="text-sm font-bold text-white">A6 Gwanda & Matopos Route</div>
-              <div className="text-[11px] text-emerald-200/90">Clear highway flow, zero roadblocks</div>
+              <div className="text-[11px] text-slate-400">Clear highway flow, zero roadblocks</div>
             </div>
           </div>
         </div>
       )}
 
       {/* Dynamic Calculated Statistics Bar (Calculated from available records, not hardcoded) */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4 text-xs">
+      <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex items-center gap-6 flex-wrap">
           <div>
-            <div className="text-slate-500 text-[11px]">Active Hazards</div>
-            <div className="text-lg font-extrabold text-slate-900 font-mono">{activeIncidents.length}</div>
+            <div className="text-[#64748B] text-[11px]">Active Hazards</div>
+            <div className="text-lg font-extrabold text-[#111827] font-mono">{activeIncidents.length}</div>
           </div>
-          <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+          <div className="h-8 w-px bg-[#E2E8F0] hidden sm:block"></div>
           <div>
-            <div className="text-slate-500 text-[11px]">Safety Desk Verified</div>
-            <div className="text-lg font-extrabold text-emerald-700 font-mono">{verifiedIncidents.length}</div>
+            <div className="text-[#64748B] text-[11px]">Safety Desk Verified</div>
+            <div className="text-lg font-extrabold text-[#16A34A] font-mono">{verifiedIncidents.length}</div>
           </div>
-          <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+          <div className="h-8 w-px bg-[#E2E8F0] hidden sm:block"></div>
           <div>
-            <div className="text-slate-500 text-[11px]">Community Pending</div>
-            <div className="text-lg font-extrabold text-amber-700 font-mono">{unverifiedReports.length}</div>
+            <div className="text-[#64748B] text-[11px]">Community Pending</div>
+            <div className="text-lg font-extrabold text-[#F97316] font-mono">{unverifiedReports.length}</div>
           </div>
-          <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+          <div className="h-8 w-px bg-[#E2E8F0] hidden sm:block"></div>
           <div>
-            <div className="text-slate-500 text-[11px]">Weather Alerts</div>
-            <div className="text-lg font-extrabold text-blue-700 font-mono">{weatherAlerts.length}</div>
+            <div className="text-[#64748B] text-[11px]">Weather Alerts</div>
+            <div className="text-lg font-extrabold text-[#2563EB] font-mono">{weatherAlerts.length}</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-          <Clock className="w-3.5 h-3.5 text-slate-400" />
+        <div className="flex items-center gap-2 text-[#64748B] text-[11px]">
+          <Clock className="w-3.5 h-3.5 text-[#64748B]" />
           <span>Updated just now</span>
           <span>·</span>
           <button
             onClick={onOpenIntegrations}
-            className="text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer underline flex items-center gap-1"
+            className="text-[#2563EB] hover:text-[#1D4ED8] font-semibold cursor-pointer underline flex items-center gap-1"
           >
             <Info className="w-3 h-3" />
             Live & Calibrated Feeds
@@ -604,18 +604,18 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
           {/* Floating Telemetry Tags on 3D Map */}
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-            <span className="px-3 py-1 bg-slate-900/90 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/40 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="px-3 py-1 bg-[#0B1220]/90 text-[#60A5FA] text-xs font-bold rounded-lg border border-[#2563EB]/40 backdrop-blur-md flex items-center gap-1.5 shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-[#2563EB] animate-ping"></span>
               GOOGLE MAPS & 3D REALISTIC CORRIDORS · BULAWAYO
             </span>
-            <span className="px-2.5 py-1 bg-slate-900/80 text-white text-xs font-mono rounded-lg border border-white/20 backdrop-blur-md hidden sm:inline-block">
+            <span className="px-2.5 py-1 bg-[#0B1220]/80 text-white text-xs font-mono rounded-lg border border-white/20 backdrop-blur-md hidden sm:inline-block">
               E28°35' / S20°09'
             </span>
           </div>
 
           <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-0.5">
+              <div className="text-xs font-semibold text-[#60A5FA] uppercase tracking-wider mb-0.5">
                 City of Kings & Queens Freight Arterials
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
@@ -628,7 +628,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
             <button
               onClick={() => onNavigateTab('map')}
-              className="px-4 py-2 bg-[#1a73e8] hover:bg-blue-600 text-white font-extrabold rounded-xl text-xs transition-colors cursor-pointer shadow-lg flex items-center justify-center gap-2 flex-shrink-0"
+              className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold rounded-xl text-xs transition-colors cursor-pointer shadow-lg shadow-blue-900/40 flex items-center justify-center gap-2 flex-shrink-0"
             >
               <span>Open Google Maps (3D View)</span>
               <ArrowRight className="w-4 h-4" />
@@ -640,13 +640,13 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       {/* Severe Weather Warnings & Breaking Alert */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Weather Travel Warnings */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+        <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <CloudRain className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-bold text-[#111827] flex items-center gap-2">
+              <CloudRain className="w-4 h-4 text-[#2563EB]" />
               SADC Seasonal Weather & River Warnings
             </h3>
-            <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold text-[#F97316] bg-[#F97316]/10 border border-[#F97316]/30 px-2 py-0.5 rounded">
               DEMO DATA FEED
             </span>
           </div>
@@ -655,15 +655,15 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             {weatherAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1"
+                className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg text-xs space-y-1"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900">{alert.title}</span>
-                  <span className="text-[10px] text-slate-500">{alert.issuedAt}</span>
+                  <span className="font-bold text-[#111827]">{alert.title}</span>
+                  <span className="text-[10px] text-[#64748B]">{alert.issuedAt}</span>
                 </div>
-                <p className="text-slate-600 text-[11px] leading-relaxed">{alert.advisoryText}</p>
-                <div className="text-[10px] text-slate-500 pt-1 flex items-center justify-between">
-                  <span>Region: <strong className="text-slate-700">{alert.region}</strong></span>
+                <p className="text-[#64748B] text-[11px] leading-relaxed">{alert.advisoryText}</p>
+                <div className="text-[10px] text-[#64748B] pt-1 flex items-center justify-between">
+                  <span>Region: <strong className="text-[#111827]">{alert.region}</strong></span>
                   <span>Source: {alert.source}</span>
                 </div>
               </div>
@@ -672,15 +672,15 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         </div>
 
         {/* Breaking & Urgent Alerts */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+        <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
+            <h3 className="text-sm font-bold text-[#111827] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[#F97316]" />
               Urgent Highway Alerts & Disruptions
             </h3>
             <button
               onClick={() => onNavigateTab('map')}
-              className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer"
+              className="text-xs text-[#2563EB] hover:text-[#1D4ED8] font-semibold cursor-pointer"
             >
               View on Map &rarr;
             </button>
@@ -705,7 +705,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 )}
                 <div className="text-[10px] text-slate-500 mt-2 flex items-center justify-between">
                   <span>{inc.status === 'verified' ? '✓ Verified by Safety Desk' : '⏳ Community Report'}</span>
-                  <span className="text-emerald-700 font-semibold">View details &rarr;</span>
+                  <span className="text-[#2563EB] font-semibold">View details &rarr;</span>
                 </div>
               </div>
             ))}
@@ -861,7 +861,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   onClick={() => setActiveNewsTab('truck')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${
                     activeNewsTab === 'truck'
-                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      ? 'bg-[#F97316] text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
@@ -874,7 +874,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   onClick={() => setActiveNewsTab('bus')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${
                     activeNewsTab === 'bus'
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-[#2563EB] text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
@@ -887,7 +887,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   onClick={() => setActiveNewsTab('commuter')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1 ${
                     activeNewsTab === 'commuter'
-                      ? 'bg-emerald-600 text-white shadow-xs'
+                      ? 'bg-[#2563EB] text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
@@ -900,7 +900,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   onClick={() => setActiveNewsTab('all')}
                   className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ml-auto ${
                     activeNewsTab === 'all'
-                      ? 'bg-slate-900 text-white shadow-xs'
+                      ? 'bg-[#0B1220] text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
@@ -921,10 +921,10 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                       alt={gazetteLeadStory.title}
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-2 left-2 bg-slate-950/85 backdrop-blur-md text-white text-[10px] font-mono px-2 py-0.5 rounded font-bold border border-white/20">
+                    <div className="absolute top-2 left-2 bg-[#0B1220]/90 backdrop-blur-md text-white text-[10px] font-mono px-2 py-0.5 rounded font-bold border border-white/20">
                       {gazetteBadge}
                     </div>
-                    <div className="absolute bottom-2 left-2 right-2 bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-sans p-2 rounded border border-white/10 line-clamp-2">
+                    <div className="absolute bottom-2 left-2 right-2 bg-[#0B1220]/80 backdrop-blur-md text-white text-[11px] font-sans p-2 rounded border border-white/10 line-clamp-2">
                       {gazetteLeadStory.summary}
                     </div>
                   </div>
@@ -932,7 +932,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   {/* Lead Headline & Teaser */}
                   <div className="lg:col-span-7 space-y-2.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] font-mono font-bold text-emerald-800 uppercase tracking-wider">
+                      <span className="text-[11px] font-mono font-bold text-[#2563EB] uppercase tracking-wider">
                         {gazetteLeadStory.categoryLabel || 'HIGHWAY PRESS HEADLINE DISPATCH'}
                       </span>
                       {gazetteLeadStory.relatedHighway && (
@@ -943,21 +943,21 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     </div>
                     <h3
                       onClick={() => onNavigateTab('news')}
-                      className="text-xl sm:text-2xl font-serif font-black text-slate-950 tracking-tight leading-snug hover:text-emerald-800 transition-colors cursor-pointer"
+                      className="text-xl sm:text-2xl font-serif font-black text-[#111827] tracking-tight leading-snug hover:text-[#2563EB] transition-colors cursor-pointer"
                     >
                       {gazetteLeadStory.title}
                     </h3>
-                    <p className="text-xs sm:text-sm font-serif text-slate-700 leading-relaxed line-clamp-3">
+                    <p className="text-xs sm:text-sm font-serif text-[#64748B] leading-relaxed line-clamp-3">
                       {gazetteLeadStory.summary}
                     </p>
 
                     <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs">
-                      <span className="font-mono text-slate-500 text-[11px]">
+                      <span className="font-mono text-[#64748B] text-[11px]">
                         By {gazetteLeadStory.author} ({gazetteLeadStory.source}) · {gazetteLeadStory.publishedAt} · {gazetteLeadStory.readTimeMinutes} min read
                       </span>
                       <button
                         onClick={() => onNavigateTab('news')}
-                        className="text-xs font-serif font-bold text-emerald-800 hover:text-emerald-950 cursor-pointer flex items-center gap-1"
+                        className="text-xs font-serif font-bold text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer flex items-center gap-1"
                       >
                         Read Full Dispatch &rarr;
                       </button>
@@ -967,20 +967,20 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               )}
 
               {/* 2-Item Quick Wire Strip */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-200 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-[#E2E8F0] text-xs">
                 {gazetteWire1 && (
                   <div
                     onClick={() => onNavigateTab('news')}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors cursor-pointer space-y-1"
+                    className="p-3 bg-[#F1F5F9] hover:bg-slate-100 rounded-xl border border-[#E2E8F0] transition-colors cursor-pointer space-y-1"
                   >
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-                      <span className="font-bold text-emerald-800">{gazetteWire1.categoryLabel || 'CORRIDOR TELEMETRY'}</span>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
+                      <span className="font-bold text-[#2563EB]">{gazetteWire1.categoryLabel || 'CORRIDOR TELEMETRY'}</span>
                       <span>{gazetteWire1.publishedAt}</span>
                     </div>
-                    <div className="font-serif font-bold text-slate-900 line-clamp-1">
+                    <div className="font-serif font-bold text-[#111827] line-clamp-1">
                       {gazetteWire1.title}
                     </div>
-                    <div className="text-[11px] font-serif text-slate-600 line-clamp-2">
+                    <div className="text-[11px] font-serif text-[#64748B] line-clamp-2">
                       {gazetteWire1.summary}
                     </div>
                   </div>
@@ -989,16 +989,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 {gazetteWire2 && (
                   <div
                     onClick={() => onNavigateTab('news')}
-                    className="p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors cursor-pointer space-y-1"
+                    className="p-3 bg-[#F1F5F9] hover:bg-slate-100 rounded-xl border border-[#E2E8F0] transition-colors cursor-pointer space-y-1"
                   >
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-                      <span className="font-bold text-amber-800">{gazetteWire2.categoryLabel || 'HIGHWAY WIRE'}</span>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
+                      <span className="font-bold text-[#F97316]">{gazetteWire2.categoryLabel || 'HIGHWAY WIRE'}</span>
                       <span>{gazetteWire2.publishedAt}</span>
                     </div>
-                    <div className="font-serif font-bold text-slate-900 line-clamp-1">
+                    <div className="font-serif font-bold text-[#111827] line-clamp-1">
                       {gazetteWire2.title}
                     </div>
-                    <div className="text-[11px] font-serif text-slate-600 line-clamp-2">
+                    <div className="text-[11px] font-serif text-[#64748B] line-clamp-2">
                       {gazetteWire2.summary}
                     </div>
                   </div>
@@ -1007,20 +1007,20 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             </div>
 
             {/* Frequently Accessed / Saved Routes Tailored to Driver Type */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+            <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Navigation className="w-4 h-4 text-emerald-600" />
+                  <h3 className="text-base font-bold text-[#111827] flex items-center gap-2">
+                    <Navigation className="w-4 h-4 text-[#2563EB]" />
                     Recommended Corridors for {driverType === 'truck' ? 'Heavy Freight Hauliers' : driverType === 'bus' ? 'Intercity Passenger Coaches' : 'Citizen Commuters'}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[#64748B]">
                     Live toll gate classifications, transit turnaround times, and corridor safety indices.
                   </p>
                 </div>
                 <button
                   onClick={() => onNavigateTab('routes')}
-                  className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer"
+                  className="text-xs text-[#2563EB] hover:text-[#1D4ED8] font-semibold cursor-pointer"
                 >
                   All Corridors & Tolls &rarr;
                 </button>
@@ -1052,36 +1052,36 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                         onSelectHighwayOnMap(route.highwayCode);
                         onNavigateTab('routes');
                       }}
-                      className="p-4 border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer bg-slate-50/60 flex flex-col justify-between"
+                      className="p-4 border border-[#E2E8F0] rounded-xl hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer bg-[#F1F5F9]/60 flex flex-col justify-between"
                     >
                       <div>
-                        <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                          <span className="font-bold text-emerald-800 font-mono">{route.highwayCode}</span>
+                        <div className="flex items-center justify-between text-xs text-[#64748B] mb-1">
+                          <span className="font-bold text-[#2563EB] font-mono">{route.highwayCode}</span>
                           <span>{route.tollCount} ZINARA Gates</span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 mb-2">
+                        <h4 className="text-sm font-bold text-[#111827] mb-2">
                           {route.origin} &rarr; {route.destination}
                         </h4>
-                        <div className="text-xs text-slate-600 space-y-1">
+                        <div className="text-xs text-[#64748B] space-y-1">
                           <div>
-                            Distance: <strong className="font-mono text-slate-900">{route.distanceKm} km</strong> (~{Math.floor(route.estMinutes / 60)}h {route.estMinutes % 60}m)
+                            Distance: <strong className="font-mono text-[#111827]">{route.distanceKm} km</strong> (~{Math.floor(route.estMinutes / 60)}h {route.estMinutes % 60}m)
                           </div>
                           <div className="flex items-center justify-between">
                             <span>{tollClassTitle} Toll:</span>
-                            <strong className="font-mono text-slate-900">${tollCost} USD</strong>
+                            <strong className="font-mono text-[#111827]">${tollCost} USD</strong>
                           </div>
                         </div>
                       </div>
 
-                      <div className="pt-3 border-t border-slate-200/60 mt-3 flex items-center justify-between text-xs">
+                      <div className="pt-3 border-t border-[#E2E8F0] mt-3 flex items-center justify-between text-xs">
                         <span className={`text-[11px] font-semibold ${
-                          hazardsOnRoute.length > 0 ? 'text-amber-700' : 'text-emerald-700'
+                          hazardsOnRoute.length > 0 ? 'text-[#F97316]' : 'text-[#16A34A]'
                         }`}>
                           {hazardsOnRoute.length > 0
                             ? `${hazardsOnRoute.length} active hazard${hazardsOnRoute.length > 1 ? 's' : ''}`
                             : '✓ Normal flow'}
                         </span>
-                        <span className="text-slate-500 flex items-center gap-1 font-medium">
+                        <span className="text-[#64748B] flex items-center gap-1 font-medium">
                           Itinerary <ArrowRight className="w-3 h-3" />
                         </span>
                       </div>
@@ -1097,22 +1097,22 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       {/* Nearby Incidents & Community Feeds */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Nearby Incidents Column (2 Cols) */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+        <div className="lg:col-span-2 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#E2E8F0]">
             <div>
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-emerald-600" />
+              <h3 className="text-base font-bold text-[#111827] flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#2563EB]" />
                 Incidents in & around {selectedTownFilter}
               </h3>
-              <p className="text-xs text-slate-500">Filter regional reports near your current location or route hub.</p>
+              <p className="text-xs text-[#64748B]">Filter regional reports near your current location or route hub.</p>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">Location:</span>
+              <span className="text-xs text-[#64748B]">Location:</span>
               <select
                 value={selectedTownFilter}
                 onChange={(e) => setSelectedTownFilter(e.target.value as ZimbabweTown)}
-                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 focus:outline-none"
+                className="bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg px-2.5 py-1 text-xs font-semibold text-[#111827] focus:outline-none"
               >
                 <option value="Harare">Harare</option>
                 <option value="Bulawayo">Bulawayo</option>
@@ -1128,8 +1128,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
           <div className="space-y-3">
             {nearbyIncidents.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 text-xs">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+              <div className="py-8 text-center text-[#64748B] text-xs">
+                <CheckCircle2 className="w-8 h-8 text-[#16A34A] mx-auto mb-2" />
                 No active disruptions currently reported in the immediate {selectedTownFilter} sector.
               </div>
             ) : (
@@ -1137,27 +1137,27 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div
                   key={incident.id}
                   onClick={() => onSelectIncident(incident)}
-                  className="p-3 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors cursor-pointer text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="p-3 border border-[#E2E8F0] rounded-lg hover:border-blue-300 transition-colors cursor-pointer text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFFFFF]"
                 >
                   <div>
-                    <div className="flex items-center gap-2 text-slate-500 text-[11px] mb-1">
-                      <span className="font-bold text-slate-800">{incident.highway}</span>
+                    <div className="flex items-center gap-2 text-[#64748B] text-[11px] mb-1">
+                      <span className="font-bold text-[#111827]">{incident.highway}</span>
                       <span>·</span>
                       <span>{incident.locationName}</span>
                       <span>·</span>
                       <span className="capitalize">{incident.timestamp}</span>
                     </div>
-                    <div className="font-bold text-slate-900">{incident.title}</div>
-                    <div className="text-slate-600 text-[11px] line-clamp-1 mt-0.5">{incident.description}</div>
+                    <div className="font-bold text-[#111827]">{incident.title}</div>
+                    <div className="text-[#64748B] text-[11px] line-clamp-1 mt-0.5">{incident.description}</div>
                   </div>
 
                   <div className="flex items-center gap-3 flex-shrink-0 text-[11px]">
                     <span className={`font-semibold uppercase ${
-                      incident.severity === 'critical' ? 'text-red-700' : incident.severity === 'warning' ? 'text-amber-700' : 'text-blue-700'
+                      incident.severity === 'critical' ? 'text-red-700' : incident.severity === 'warning' ? 'text-[#F97316]' : 'text-[#2563EB]'
                     }`}>
                       {incident.severity}
                     </span>
-                    <button className="px-2.5 py-1 bg-slate-900 text-white rounded font-medium">
+                    <button className="px-2.5 py-1 bg-[#0B1220] hover:bg-[#2563EB] text-white rounded font-medium transition-colors">
                       Details
                     </button>
                   </div>
@@ -1170,45 +1170,45 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         {/* Public Transport Terminal Status & News Preview (1 Col) */}
         <div className="space-y-4">
           {/* Major Terminal Highlights */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Bus className="w-4 h-4 text-emerald-600" />
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-3">
+            <h3 className="text-sm font-bold text-[#111827] flex items-center gap-2">
+              <Bus className="w-4 h-4 text-[#2563EB]" />
               Main Public Transport Ranks
             </h3>
 
             <div className="space-y-2.5 text-xs">
-              <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="font-bold text-slate-900">Road Port (Harare CBD)</div>
-                <div className="text-slate-600 text-[11px]">Intercity & cross-border coach departures operating normally.</div>
+              <div className="p-2.5 bg-[#F1F5F9] rounded-lg border border-[#E2E8F0]">
+                <div className="font-bold text-[#111827]">Road Port (Harare CBD)</div>
+                <div className="text-[#64748B] text-[11px]">Intercity & cross-border coach departures operating normally.</div>
               </div>
-              <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="font-bold text-slate-900">Renkini Terminal (Bulawayo)</div>
-                <div className="text-slate-600 text-[11px]">Matabeleland routes active; morning buses departing on schedule.</div>
+              <div className="p-2.5 bg-[#F1F5F9] rounded-lg border border-[#E2E8F0]">
+                <div className="font-bold text-[#111827]">Renkini Terminal (Bulawayo)</div>
+                <div className="text-[#64748B] text-[11px]">Matabeleland routes active; morning buses departing on schedule.</div>
               </div>
-              <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="font-bold text-slate-900">Mbare Musika (Harare)</div>
-                <div className="text-slate-600 text-[11px]">High passenger volume on eastern rural routes; police patrol on site.</div>
+              <div className="p-2.5 bg-[#F1F5F9] rounded-lg border border-[#E2E8F0]">
+                <div className="font-bold text-[#111827]">Mbare Musika (Harare)</div>
+                <div className="text-[#64748B] text-[11px]">High passenger volume on eastern rural routes; police patrol on site.</div>
               </div>
             </div>
 
             <button
               onClick={() => onNavigateTab('operators')}
-              className="w-full py-1.5 text-center text-xs font-semibold text-emerald-700 hover:text-emerald-900 cursor-pointer"
+              className="w-full py-1.5 text-center text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8] cursor-pointer"
             >
               Browse Transport Operators &rarr;
             </button>
           </div>
 
           {/* Top News Teaser */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Newspaper className="w-4 h-4 text-slate-700" />
+              <h3 className="text-sm font-bold text-[#111827] flex items-center gap-2">
+                <Newspaper className="w-4 h-4 text-[#64748B]" />
                 Latest Road News
               </h3>
               <button
                 onClick={() => onNavigateTab('news')}
-                className="text-[11px] text-emerald-700 font-semibold cursor-pointer"
+                className="text-[11px] text-[#2563EB] hover:text-[#1D4ED8] font-semibold cursor-pointer"
               >
                 All News &rarr;
               </button>
@@ -1219,10 +1219,10 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div
                   key={story.id}
                   onClick={() => onOpenNewsStory(story)}
-                  className="p-2.5 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                  className="p-2.5 hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer border border-transparent hover:border-[#E2E8F0]"
                 >
-                  <div className="text-[10px] text-slate-500 mb-0.5">{story.categoryLabel} · {story.publishedAt}</div>
-                  <div className="font-bold text-slate-900 line-clamp-2 leading-snug">{story.title}</div>
+                  <div className="text-[10px] text-[#64748B] mb-0.5">{story.categoryLabel} · {story.publishedAt}</div>
+                  <div className="font-bold text-[#111827] line-clamp-2 leading-snug">{story.title}</div>
                 </div>
               ))}
             </div>

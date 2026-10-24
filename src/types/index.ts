@@ -219,6 +219,31 @@ export interface RouteOption {
   isSaved?: boolean;
 }
 
+export interface RouteStep {
+  instruction: string;
+  distanceKm?: number;
+  highlightText?: string;
+  icon?: 'straight' | 'turn-right' | 'turn-left' | 'toll' | 'checkpoint' | 'destination' | 'start';
+}
+
+export interface RoutePreviewData {
+  routeId: string;
+  origin: string;
+  destination: string;
+  highwayCode: string;
+  distanceKm: number;
+  estMinutes: number;
+  tollCount: number;
+  tollFeeUsd: number;
+  tollFeeZiG: number;
+  tollPlazas: { name: string; lat: number; lng: number }[];
+  waypoints: [number, number][];
+  roadCondition: string;
+  hazardsSummary: string;
+  fastestRouteLabel?: string;
+  steps: RouteStep[];
+}
+
 export interface AppNotification {
   id: string;
   title: string;

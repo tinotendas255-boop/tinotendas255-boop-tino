@@ -8,12 +8,12 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onOpenIntegrations, onNavigateTab }) => {
   return (
-    <footer className="bg-slate-950 text-slate-400 border-t border-slate-800 mt-12 text-xs">
+    <footer className="bg-[#0B1220] text-[#64748B] border-t border-[#1E293B] mt-12 text-xs">
       {/* Emergency Roadside Hotlines Bar */}
-      <div className="bg-slate-900 border-b border-slate-800 py-3 px-4 sm:px-6">
+      <div className="bg-[#070B14] border-b border-[#1E293B] py-3 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-white font-semibold">
-            <Phone className="w-4 h-4 text-emerald-400" />
+            <Phone className="w-4 h-4 text-[#16A34A]" />
             <span>Zimbabwe National Road Emergency Directory:</span>
           </div>
 
@@ -21,15 +21,15 @@ export const Footer: React.FC<FooterProps> = ({ onOpenIntegrations, onNavigateTa
             <span>
               <strong className="text-white">ZRP Police Traffic Desk:</strong> +263 242 703631
             </span>
-            <span className="text-slate-600">·</span>
+            <span className="text-[#334155]">·</span>
             <span>
               <strong className="text-white">Traffic Safety Council (TSCZ):</strong> +263 242 751203
             </span>
-            <span className="text-slate-600">·</span>
+            <span className="text-[#334155]">·</span>
             <span>
               <strong className="text-white">National Ambulance Services:</strong> 999 / 112
             </span>
-            <span className="text-slate-600">·</span>
+            <span className="text-[#334155]">·</span>
             <span>
               <strong className="text-white">AA Zimbabwe Road Rescue:</strong> +263 242 752445
             </span>
@@ -42,12 +42,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenIntegrations, onNavigateTa
         {/* Brand statement */}
         <div className="space-y-2 md:col-span-1">
           <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <span className="w-6 h-6 rounded bg-emerald-600 flex items-center justify-center font-mono text-xs">
+            <span className="w-6 h-6 rounded bg-[#2563EB] text-white flex items-center justify-center font-mono text-xs font-black">
               RL
             </span>
             <span>RoadLink Zimbabwe</span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <p className="text-[11px] text-[#94A3B8] leading-relaxed">
             Unified digital transport and highway intelligence network for motorists, cross-border haulage operators, and commuter networks across Zimbabwe.
           </p>
         </div>
@@ -57,7 +57,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenIntegrations, onNavigateTa
           <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-2.5">
             Key Highway Corridors
           </h4>
-          <ul className="space-y-1.5 text-[11px] text-slate-400">
+          <ul className="space-y-1.5 text-[11px] text-[#94A3B8]">
             <li>A4: Harare - Masvingo - Beitbridge</li>
             <li>A5: Harare - Gweru - Bulawayo</li>
             <li>A8: Bulawayo - Hwange - Victoria Falls</li>
@@ -71,20 +71,20 @@ export const Footer: React.FC<FooterProps> = ({ onOpenIntegrations, onNavigateTa
           <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-2.5">
             Platform Transparency
           </h4>
-          <ul className="space-y-1.5 text-[11px] text-slate-400">
+          <ul className="space-y-1.5 text-[11px] text-[#94A3B8]">
             <li>
               <button
                 onClick={onOpenIntegrations}
                 className="hover:text-white transition-colors text-left cursor-pointer flex items-center gap-1"
               >
-                <Server className="w-3 h-3 text-emerald-400" />
+                <Server className="w-3 h-3 text-[#2563EB]" />
                 <span>Integrations & Demo vs Live Status</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => onNavigateTab('publisher')}
-                className="hover:text-amber-400 transition-colors text-left cursor-pointer flex items-center gap-1 text-amber-500 font-semibold"
+                className="hover:text-[#FB923C] transition-colors text-left cursor-pointer flex items-center gap-1 text-[#F97316] font-semibold"
               >
                 <span>Accredited Press & Newsroom Portal &rarr;</span>
               </button>
@@ -100,13 +100,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenIntegrations, onNavigateTa
           <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-2.5">
             Standards & Safety Pledge
           </h4>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <p className="text-[11px] text-[#94A3B8] leading-relaxed">
             Data provided is for informational awareness. Always obey physical road signage, traffic marshals, VID officers, and Zimbabwe Republic Police directives on the highway.
           </p>
         </div>
       </div>
 
-      <div className="border-t border-slate-900 py-4 px-4 sm:px-6 text-center text-[11px] text-slate-500">
+      <div className="border-t border-[#1E293B] py-4 px-4 sm:px-6 text-center text-[11px] text-[#64748B]">
         © {new Date().getFullYear()} RoadLink Zimbabwe · Serving Southern African Trade Corridors
       </div>
     </footer>

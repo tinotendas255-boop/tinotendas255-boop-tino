@@ -495,14 +495,14 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
     <div className="space-y-6 pb-20">
       {/* Toast Feedback */}
       {feedbackToast && (
-        <div className="fixed top-20 right-4 z-[1700] bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 text-xs font-semibold animate-in fade-in slide-in-from-top-2">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
+        <div className="fixed top-20 right-4 z-[1700] bg-[#0B1220] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-[#2563EB]/40 text-xs font-semibold animate-in fade-in slide-in-from-top-2">
+          <Sparkles className="w-4 h-4 text-[#16A34A]" />
           <span>{feedbackToast}</span>
         </div>
       )}
 
       {/* Top Banner / Masthead */}
-      <div className="bg-slate-950 text-white rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
+      <div className="bg-[#0B1220] text-white rounded-2xl p-6 sm:p-8 border border-[#1E293B] shadow-xl relative overflow-hidden">
         {/* Subtle decorative background watermark */}
         <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none select-none text-[160px] font-serif font-black">
           PRESS
@@ -510,14 +510,14 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-bold uppercase tracking-wider">
-              <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/15 text-[#FB923C] border border-[#F97316]/30 text-xs font-bold uppercase tracking-wider">
+              <Radio className="w-3.5 h-3.5 text-[#F97316] animate-pulse" />
               <span>Zimbabwe Media Commission · Accredited Press Bureau</span>
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight text-white">
               RoadLink Newsroom & Press Publisher Dashboard
             </h1>
-            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-sans">
+            <p className="text-[#94A3B8] text-xs sm:text-sm leading-relaxed font-sans">
               Dedicated editorial portal for newspapers, broadcasters, transport correspondents, and accredited journalists to upload verified dispatches, road safety bulletins, and live highway telemetry.
             </p>
           </div>
@@ -525,7 +525,7 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onNavigateTab('home')}
-              className="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2 bg-[#111C2E] hover:bg-[#1E293B] text-slate-200 border border-[#1E293B] rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <span>← Back to Commuter View</span>
             </button>
@@ -536,7 +536,7 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                   handleResetForm();
                   setActiveView('upload');
                 }}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-md shadow-blue-900/30"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Upload New Dispatch</span>
@@ -547,9 +547,9 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
 
         {/* Live Bureau Status Strip */}
         {publisher && (
-          <div className="mt-6 pt-5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="mt-6 pt-5 border-t border-[#1E293B] flex flex-wrap items-center justify-between gap-4 text-xs">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-serif font-black text-amber-300 text-base">
+              <div className="w-9 h-9 rounded-xl bg-[#2563EB]/20 border border-[#2563EB]/40 flex items-center justify-center font-serif font-black text-[#60A5FA] text-base">
                 {publisher.organizationName.charAt(0)}
               </div>
               <div>
@@ -557,36 +557,36 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                   <span className="font-bold text-white text-sm">
                     {publisher.organizationName}
                   </span>
-                  <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-[10px] font-mono font-bold flex items-center gap-1">
+                  <span className="px-1.5 py-0.2 bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/30 rounded text-[10px] font-mono font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> ZMC Verified
                   </span>
                 </div>
-                <div className="text-slate-400 text-[11px] flex items-center gap-2">
-                  <span>Byline: <strong className="text-slate-200">{publisher.reporterName}</strong></span>
+                <div className="text-[#94A3B8] text-[11px] flex items-center gap-2">
+                  <span>Byline: <strong className="text-white">{publisher.reporterName}</strong></span>
                   <span>·</span>
-                  <span>Bureau: <strong className="text-slate-200">{publisher.cityBureau}</strong></span>
+                  <span>Bureau: <strong className="text-white">{publisher.cityBureau}</strong></span>
                   <span>·</span>
-                  <span className="font-mono text-amber-300/80">{publisher.pressCardNumber}</span>
+                  <span className="font-mono text-[#FB923C]">{publisher.pressCardNumber}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-[10px] text-slate-400 uppercase font-mono">Published Stories</div>
-                <div className="text-base font-bold text-amber-400 font-mono">
+                <div className="text-[10px] text-[#94A3B8] uppercase font-mono">Published Stories</div>
+                <div className="text-base font-bold text-[#60A5FA] font-mono">
                   {newsStories.filter(s => s.source?.toLowerCase().includes(publisher.organizationName.toLowerCase())).length}
                 </div>
               </div>
-              <div className="text-right border-l border-slate-800 pl-4">
-                <div className="text-[10px] text-slate-400 uppercase font-mono">Reader Reach</div>
-                <div className="text-base font-bold text-emerald-400 font-mono">
+              <div className="text-right border-l border-[#1E293B] pl-4">
+                <div className="text-[10px] text-[#94A3B8] uppercase font-mono">Reader Reach</div>
+                <div className="text-base font-bold text-[#16A34A] font-mono">
                   {publisher.totalViews.toLocaleString()} reads
                 </div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-red-950/50 hover:text-red-300 hover:border-red-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ml-2"
+                className="px-3 py-1.5 bg-[#111C2E] hover:bg-red-950/50 hover:text-red-300 hover:border-red-800 border border-[#1E293B] text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ml-2"
                 title="Sign out of newsroom account"
               >
                 <LogOut className="w-3.5 h-3.5" />

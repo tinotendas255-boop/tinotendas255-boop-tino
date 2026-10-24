@@ -1,42 +1,72 @@
 @import "tailwindcss";
 
+@theme {
+  --color-navy: #0B1220;
+  --color-navy-dark: #070B14;
+  --color-navy-light: #162032;
+  --color-royal: #2563EB;
+  --color-royal-hover: #1D4ED8;
+  --color-royal-light: #EFF6FF;
+  --color-pure-white: #FFFFFF;
+  --color-light-grey: #F1F5F9;
+  --color-accent-orange: #F97316;
+  --color-accent-orange-light: #FFF7ED;
+  --color-success-green: #16A34A;
+  --color-success-green-light: #F0FDF4;
+  --color-charcoal: #111827;
+  --color-slate-grey: #64748B;
+  --color-light-slate: #E2E8F0;
+}
+
 :root {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color-scheme: light;
+  --roadlink-navy: #0B1220;
+  --roadlink-blue: #2563EB;
+  --roadlink-white: #FFFFFF;
+  --roadlink-light: #F1F5F9;
+  --roadlink-orange: #F97316;
+  --roadlink-green: #16A34A;
+  --roadlink-charcoal: #111827;
+  --roadlink-slate: #64748B;
+  --roadlink-border: #E2E8F0;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #F1F5F9;
+  color: #111827;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Leaflet Container & Popup styling overrides */
+/* Leaflet Container & Popup styling overrides adhering to RoadLink palette */
 .leaflet-container {
   font-family: inherit !important;
   z-index: 10;
   width: 100%;
   height: 100%;
+  background-color: #F1F5F9 !important;
 }
 
 .leaflet-popup-content-wrapper {
   padding: 0 !important;
   border-radius: 0.75rem !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(11, 18, 32, 0.18), 0 8px 10px -6px rgba(11, 18, 32, 0.1) !important;
+  border: 1px solid #E2E8F0 !important;
+  background: #FFFFFF !important;
   overflow: hidden;
 }
 
 .leaflet-popup-content {
   margin: 0 !important;
   line-height: 1.4 !important;
+  color: #111827 !important;
 }
 
 .leaflet-popup-tip {
-  background: white !important;
+  background: #FFFFFF !important;
   box-shadow: none !important;
 }
 

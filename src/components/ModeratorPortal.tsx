@@ -54,16 +54,16 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-slate-900 text-white rounded-xl p-5 border border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#0B1220] text-white rounded-xl p-5 border border-[#1E293B] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-1">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#16A34A] mb-1">
             <ShieldCheck className="w-4 h-4" />
             Highway Safety Administration & Moderator Console
           </div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h2 className="text-xl font-bold tracking-tight text-white">
             Corridor Verification & Incident Operations Desk
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#94A3B8] mt-1">
             Verification workflow for community hazard reports, emergency highway broadcast banners, and resolution audit records.
           </p>
         </div>
@@ -74,12 +74,12 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
             onClick={() => setActiveTab('pending')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'pending'
-                ? 'bg-amber-500 text-slate-950 font-bold'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                ? 'bg-[#F97316] text-white font-bold'
+                : 'bg-[#111C2E] hover:bg-[#1E293B] text-[#94A3B8]'
             }`}
           >
             <span>Pending Review</span>
-            <span className="px-1.5 py-0.2 bg-slate-900 text-white text-[10px] rounded-full">
+            <span className="px-1.5 py-0.2 bg-[#070B14] text-white text-[10px] rounded-full">
               {pendingReports.length}
             </span>
           </button>
@@ -88,12 +88,12 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
             onClick={() => setActiveTab('active')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'active'
-                ? 'bg-emerald-500 text-slate-950 font-bold'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                ? 'bg-[#2563EB] text-white font-bold'
+                : 'bg-[#111C2E] hover:bg-[#1E293B] text-[#94A3B8]'
             }`}
           >
             <span>Live Verified</span>
-            <span className="px-1.5 py-0.2 bg-slate-900 text-white text-[10px] rounded-full">
+            <span className="px-1.5 py-0.2 bg-[#070B14] text-white text-[10px] rounded-full">
               {activeReports.length}
             </span>
           </button>
@@ -103,7 +103,7 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'emergency_banner'
                 ? 'bg-red-600 text-white font-bold'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                : 'bg-[#111C2E] hover:bg-[#1E293B] text-[#94A3B8]'
             }`}
           >
             <Megaphone className="w-3.5 h-3.5" />
@@ -115,12 +115,12 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
             onClick={() => setActiveTab('audit_log')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'audit_log'
-                ? 'bg-white text-slate-900 font-bold'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                ? 'bg-[#FFFFFF] text-[#111827] font-bold'
+                : 'bg-[#111C2E] hover:bg-[#1E293B] text-[#94A3B8]'
             }`}
           >
             <span>Audit Trail</span>
-            <span className="px-1.5 py-0.2 bg-slate-700 text-white text-[10px] rounded-full">
+            <span className="px-1.5 py-0.2 bg-[#1E293B] text-white text-[10px] rounded-full">
               {auditLogs.length}
             </span>
           </button>
@@ -129,53 +129,53 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
 
       {/* Tab: Pending Community Submissions */}
       {activeTab === 'pending' && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-[#111827]">
                 Incoming Community Reports ({pendingReports.length})
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#64748B]">
                 Verify with patrol officers, escalate to live hazard alerts, or dismiss erroneous reports.
               </p>
             </div>
           </div>
 
           {pendingReports.length === 0 ? (
-            <div className="py-12 text-center text-slate-500">
-              <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-800">All community reports have been processed</p>
-              <p className="text-xs text-slate-500 mt-0.5">New driver hazard reports will appear here in real time.</p>
+            <div className="py-12 text-center text-[#64748B]">
+              <CheckCircle2 className="w-10 h-10 text-[#16A34A] mx-auto mb-2" />
+              <p className="text-sm font-semibold text-[#111827]">All community reports have been processed</p>
+              <p className="text-xs text-[#64748B] mt-0.5">New driver hazard reports will appear here in real time.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {pendingReports.map((incident) => (
                 <div
                   key={incident.id}
-                  className="p-4 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors bg-amber-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-4 border border-[#E2E8F0] rounded-lg hover:border-blue-300 transition-colors bg-[#F1F5F9]/60 flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                      <span className="font-semibold text-slate-800">{incident.highway}</span>
+                    <div className="flex items-center gap-2 text-xs text-[#64748B] mb-1">
+                      <span className="font-semibold text-[#111827]">{incident.highway}</span>
                       <span>·</span>
                       <span>{incident.locationName}</span>
                       <span>·</span>
-                      <span className="text-amber-700 font-semibold uppercase">{incident.severity}</span>
+                      <span className="text-[#F97316] font-semibold uppercase">{incident.severity}</span>
                       <span>·</span>
                       <span>{incident.timestamp}</span>
                     </div>
 
-                    <h4 className="text-base font-bold text-slate-900 mb-1">{incident.title}</h4>
-                    <p className="text-xs text-slate-600 line-clamp-2 mb-2">{incident.description}</p>
+                    <h4 className="text-base font-bold text-[#111827] mb-1">{incident.title}</h4>
+                    <p className="text-xs text-[#64748B] line-clamp-2 mb-2">{incident.description}</p>
 
-                    <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                      <span>Reported by: <span className="font-medium text-slate-700">{incident.reporterName}</span> ({incident.reporterRole})</span>
+                    <div className="flex items-center gap-3 text-[11px] text-[#64748B]">
+                      <span>Reported by: <span className="font-medium text-[#111827]">{incident.reporterName}</span> ({incident.reporterRole})</span>
                       <span>·</span>
                       <span>{incident.confirmationsCount} driver confirmations</span>
                       {incident.detourAdvice && (
                         <>
                           <span>·</span>
-                          <span className="text-amber-800">Detour: {incident.detourAdvice}</span>
+                          <span className="text-[#F97316] font-semibold">Detour: {incident.detourAdvice}</span>
                         </>
                       )}
                     </div>
@@ -185,14 +185,14 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => onOpenIncidentDetail(incident)}
-                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium cursor-pointer"
+                      className="px-2.5 py-1.5 bg-[#F1F5F9] hover:bg-slate-200 text-[#111827] rounded text-xs font-medium cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </button>
 
                     <button
                       onClick={() => onVerifyIncident(incident.id, 'Verified via corridor safety patrol')}
-                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold cursor-pointer shadow-sm flex items-center gap-1.5"
+                      className="px-3 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded text-xs font-semibold cursor-pointer shadow-sm flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Verify & Publish
@@ -214,13 +214,13 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
 
       {/* Tab: Live Verified Hazards */}
       {activeTab === 'active' && (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-[#111827]">
                 Active Verified Hazards on Zimbabwe Corridors ({activeReports.length})
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#64748B]">
                 Mark as resolved when road crews finish, or adjust severity for evolving situations.
               </p>
             </div>
@@ -230,24 +230,24 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
             {activeReports.map((incident) => (
               <div
                 key={incident.id}
-                className="p-4 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-4 border border-[#E2E8F0] rounded-lg hover:border-blue-300 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                    <span className="font-semibold text-emerald-800">{incident.highway}</span>
+                  <div className="flex items-center gap-2 text-xs text-[#64748B] mb-1">
+                    <span className="font-semibold text-[#2563EB]">{incident.highway}</span>
                     <span>·</span>
                     <span>{incident.locationName}</span>
                     <span>·</span>
-                    <span className="font-semibold uppercase text-slate-700">{incident.severity}</span>
+                    <span className="font-semibold uppercase text-[#111827]">{incident.severity}</span>
                     <span>·</span>
                     <span>{incident.timestamp}</span>
                   </div>
 
-                  <h4 className="text-base font-bold text-slate-900 mb-1">{incident.title}</h4>
-                  <p className="text-xs text-slate-600 mb-2">{incident.description}</p>
+                  <h4 className="text-base font-bold text-[#111827] mb-1">{incident.title}</h4>
+                  <p className="text-xs text-[#64748B] mb-2">{incident.description}</p>
 
-                  <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                    <span className="text-emerald-700 font-medium">✓ Verified by {incident.verifiedBy || 'Operations Desk'}</span>
+                  <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
+                    <span className="text-[#16A34A] font-medium">✓ Verified by {incident.verifiedBy || 'Operations Desk'}</span>
                     <span>·</span>
                     <span>{incident.confirmationsCount} driver confirmations</span>
                   </div>
@@ -258,7 +258,7 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
                   <select
                     value={incident.severity}
                     onChange={(e) => onChangeSeverity(incident.id, e.target.value as IncidentSeverity)}
-                    className="bg-slate-50 border border-slate-200 text-xs rounded px-2 py-1.5 font-medium text-slate-800 focus:outline-none"
+                    className="bg-[#F1F5F9] border border-[#E2E8F0] text-xs rounded px-2 py-1.5 font-medium text-[#111827] focus:outline-none"
                   >
                     <option value="critical">Critical</option>
                     <option value="warning">Warning</option>
@@ -268,7 +268,7 @@ export const ModeratorPortal: React.FC<ModeratorPortalProps> = ({
 
                   <button
                     onClick={() => onResolveIncident(incident.id, 'Hazard cleared; normal traffic flow restored')}
-                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold cursor-pointer"
+                    className="px-3 py-1.5 bg-[#0B1220] hover:bg-[#2563EB] text-white rounded text-xs font-semibold cursor-pointer transition-colors"
                   >
                     Mark Cleared / Resolved
                   </button>

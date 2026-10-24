@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
-import { generateRoadAssistantAnswer } from './src/utils/aiRoadKnowledge.js';
+import { generateRoadAssistantAnswer, detectRoutePreviewFromQuery } from './src/utils/aiRoadKnowledge.js';
 
 dotenv.config();
 
@@ -73,7 +73,13 @@ CRITICAL RESPONSE RULES:
         });
 
         if (response.text) {
-          return res.json({ reply: response.text, badges: ['Gemini 3.8 Flash', 'Live AI Analysis'] });
+          const preview = detectRoutePreviewFromQuery(message);
+          return res.json({
+            reply: response.text,
+            badges: ['Gemini 3.8 Flash', 'Live AI Analysis'],
+            routePreview: preview,
+            highlightRoute: preview?.highwayCode,
+          });
         }
       } catch (geminiError: any) {
         console.warn('Gemini API call failed, using intelligent domain knowledge engine:', geminiError?.message);
@@ -92,6 +98,7 @@ CRITICAL RESPONSE RULES:
       reply: answer.reply,
       highlightRoute: answer.highlightRoute,
       badges: answer.badges,
+      routePreview: answer.routePreview,
     });
   } catch (err: any) {
     console.error('Error in road assistant route:', err);
