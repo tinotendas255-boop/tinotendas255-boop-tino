@@ -220,6 +220,21 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
   const [officialQuoteSource, setOfficialQuoteSource] = useState('');
   const [alternativeRoute, setAlternativeRoute] = useState('');
   const [tagsInput, setTagsInput] = useState('A6 Corridor, Highway Safety, Zimbabwe');
+  const [selectedSyndicateMedia, setSelectedSyndicateMedia] = useState<string[]>([
+    'The Herald',
+    'ZBC News',
+    'The Chronicle',
+    'Star FM',
+  ]);
+
+  const MEDIA_SYNDICATION_PARTNERS = [
+    { name: 'The Herald', tag: 'Zimpapers National Daily', icon: '📰' },
+    { name: 'ZBC News', tag: 'Zimbabwe Broadcasting Corporation TV & Radio', icon: '📺' },
+    { name: 'The Chronicle', tag: 'Bulawayo & Matabeleland Regional Daily', icon: '🗞️' },
+    { name: 'Star FM', tag: 'National Commercial Radio Network', icon: '📻' },
+    { name: 'NewsDay Zimbabwe', tag: 'Alpha Media Holdings Daily', icon: '📄' },
+    { name: 'Zifm Stereo', tag: 'National News & Talk Radio', icon: '🎙️' },
+  ];
 
   // Media & Image Upload State
   const [selectedPhotoPreset, setSelectedPhotoPreset] = useState<string>(highwayPressPhoto);
@@ -448,6 +463,10 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
       alternativeRoute: alternativeRoute.trim() || undefined,
       verificationStatus: publisher.isZmcAccredited ? 'official' : 'verified',
       tags: tags.length > 0 ? tags : ['RoadLink', 'Highway Press'],
+      syndicatedMediaOutlets: selectedSyndicateMedia,
+      syndicationConfirmedAt: 'Just now (Accredited Broadcast Dispatch)',
+      comments: [],
+      likesCount: 1,
     };
 
     if (editingStoryId) {
@@ -1241,6 +1260,60 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                       placeholder="e.g. A6, Gwanda, Esigodini, Tollgate, Bulawayo"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900"
                     />
+                  </div>
+                </div>
+
+                {/* Media Organisations Syndication Selector (The Herald, ZBC News, etc.) */}
+                <div className="bg-slate-50 border-2 border-slate-900/10 rounded-2xl p-4 sm:p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#F97316] animate-pulse"></span>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                        Syndicate Directly to Zimbabwean News Organisations
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-mono text-emerald-800 bg-emerald-100 font-bold px-2 py-0.5 rounded border border-emerald-300">
+                      OFFICIALLY ACCREDITED & RECOGNISED
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                    When you publish, RoadLink dispatches your verified dispatch with your author attribution to Zimbabwe's leading news wires, radio broadcasters, and national dailies:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
+                    {MEDIA_SYNDICATION_PARTNERS.map((media) => {
+                      const isSelected = selectedSyndicateMedia.includes(media.name);
+                      return (
+                        <button
+                          type="button"
+                          key={media.name}
+                          onClick={() => {
+                            setSelectedSyndicateMedia((prev) =>
+                              prev.includes(media.name)
+                                ? prev.filter((m) => m !== media.name)
+                                : [...prev, media.name]
+                            );
+                          }}
+                          className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-white border-blue-600 shadow-sm ring-1 ring-blue-500/30'
+                              : 'bg-white/60 border-slate-200 text-slate-500 hover:bg-white'
+                          }`}
+                        >
+                          <span className="text-lg">{media.icon}</span>
+                          <div className="flex-1 overflow-hidden">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-xs text-slate-900 truncate">{media.name}</span>
+                              <span className={`text-[10px] font-bold ${isSelected ? 'text-blue-600' : 'text-slate-400'}`}>
+                                {isSelected ? '✓ Wired' : '+ Add'}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-500 leading-tight mt-0.5">{media.tag}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

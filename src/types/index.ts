@@ -103,6 +103,8 @@ export interface RoadIncident {
   userFoundHelpful?: boolean;
   comments?: IncidentComment[];
   isDemoData?: boolean;
+  syndicatedMediaOutlets?: string[];
+  sentToAdministrator?: boolean;
 }
 
 export interface WeatherTravelAlert {
@@ -135,6 +137,15 @@ export interface HighwayCorridor {
 }
 
 export type DriverType = 'truck' | 'bus' | 'commuter';
+
+export interface StoryComment {
+  id: string;
+  userName: string;
+  userRole?: UserRole;
+  text: string;
+  timestamp: string;
+  likesCount?: number;
+}
 
 export interface NewsStory {
   id: string;
@@ -173,6 +184,10 @@ export interface NewsStory {
   verificationStatus: 'verified' | 'official' | 'community' | 'demo';
   tags: string[];
   targetAudience?: ('truck' | 'bus' | 'commuter' | 'all')[];
+  syndicatedMediaOutlets?: string[]; // e.g. ["The Herald", "ZBC News", "The Chronicle", "Star FM", "NewsDay"]
+  syndicationConfirmedAt?: string;
+  comments?: StoryComment[];
+  likesCount?: number;
 }
 
 export interface TransportOperator {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NewsStory, ZimbabweHighway, ZimbabweTown } from '../types';
+import { NewsStory, ZimbabweHighway, ZimbabweTown, UserProfile, StoryComment } from '../types';
 import { NEWS_STORIES } from '../data/mockRoadData';
 import highwayPressPhoto from '../assets/highway_press_photo.jpg';
 import {
@@ -34,7 +34,11 @@ import {
   PenTool,
   Truck,
   Bus,
-  Car
+  Car,
+  MessageSquare,
+  ThumbsUp,
+  Building2,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface NewsFeedProps {
@@ -44,6 +48,8 @@ interface NewsFeedProps {
   onSelectHighway?: (highway: ZimbabweHighway) => void;
   onSelectStory?: (story: NewsStory) => void;
   onNavigateTab?: (tab: string) => void;
+  onAddStoryComment?: (storyId: string, text: string) => void;
+  currentUserProfile?: UserProfile;
 }
 
 type NewsCategoryFilter =
@@ -80,6 +86,8 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
   onSelectHighway,
   onSelectStory,
   onNavigateTab,
+  onAddStoryComment,
+  currentUserProfile,
 }) => {
   const stories = newsStories && newsStories.length > 0 ? newsStories : NEWS_STORIES;
 
@@ -95,6 +103,31 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
   const [readerFontSize, setReaderFontSize] = useState<'sm' | 'base' | 'lg'>('base');
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [audioProgress, setAudioProgress] = useState<number>(0);
+
+  // Reader comments state
+  const [commentInput, setCommentInput] = useState<string>('');
+  const [likedCommentIds, setLikedCommentIds] = useState<string[]>([]);
+  const [commentSuccessNotice, setCommentSuccessNotice] = useState<boolean>(false);
+
+  // Dynamic live reference to current active story (keeps comments in sync immediately)
+  const currentModalStory = activeStoryModal
+    ? stories.find((s) => s.id === activeStoryModal.id) || activeStoryModal
+    : null;
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentInput.trim() || !currentModalStory) return;
+    onAddStoryComment?.(currentModalStory.id, commentInput.trim());
+    setCommentInput('');
+    setCommentSuccessNotice(true);
+    setTimeout(() => setCommentSuccessNotice(false), 3000);
+  };
+
+  const handleToggleLikeComment = (commentId: string) => {
+    setLikedCommentIds((prev) =>
+      prev.includes(commentId) ? prev.filter((id) => id !== commentId) : [...prev, commentId]
+    );
+  };
 
   // Citizen Press Tip Modal state
   const [isTipModalOpen, setIsTipModalOpen] = useState<boolean>(false);
@@ -478,13 +511,21 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
 
                 {/* Lead Story Action Bar */}
                 <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => setActiveStoryModal(leadStory)}
-                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-serif font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                      className="px-4 py-2 bg-[#0B1220] hover:bg-slate-800 text-white font-serif font-bold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
                     >
                       <span>Read Full Dispatch</span>
                       <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={() => setActiveStoryModal(leadStory)}
+                      className="px-3 py-2 bg-[#F1F5F9] hover:bg-slate-200 text-[#0B1220] border border-[#E2E8F0] font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-[#2563EB]" />
+                      <span>{(leadStory.comments || []).length} Reader Comments</span>
                     </button>
 
                     <button
@@ -492,7 +533,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                         setIsPlayingAudio(!isPlayingAudio);
                         if (!isPlayingAudio) setActiveStoryModal(leadStory);
                       }}
-                      className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#16A34A] border border-emerald-200 font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
                     >
                       <Volume2 className="w-3.5 h-3.5" />
                       <span>{isPlayingAudio ? 'Listening...' : 'Listen to Report'}</span>
@@ -563,17 +604,26 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                     onClick={() => setActiveStoryModal(story)}
                     className="p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200 space-y-1.5"
                   >
-                    <div className="flex items-center gap-1 text-[10px] font-mono text-slate-500">
-                      <span>{story.locationOrRoute}</span>
-                      <span>·</span>
-                      <span>{story.publishedAt}</span>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
+                      <span>{story.locationOrRoute} · {story.publishedAt}</span>
+                      <span className="flex items-center gap-1 text-[#2563EB]">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{(story.comments || []).length}</span>
+                      </span>
                     </div>
-                    <h4 className="font-serif font-bold text-slate-900 text-sm leading-snug hover:text-emerald-800 transition-colors">
+                    <h4 className="font-serif font-bold text-slate-900 text-sm leading-snug hover:text-[#2563EB] transition-colors">
                       {story.title}
                     </h4>
                     <p className="text-xs text-slate-600 font-serif line-clamp-2 leading-relaxed">
                       {story.summary}
                     </p>
+                    {story.syndicatedMediaOutlets && story.syndicatedMediaOutlets.length > 0 && (
+                      <div className="flex items-center gap-1 text-[9px] text-[#2563EB] font-bold pt-0.5">
+                        <span>📻</span>
+                        <span>{story.syndicatedMediaOutlets[0]}</span>
+                        <span className="bg-blue-50 text-[8px] px-1 rounded uppercase">RECOGNISED</span>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
@@ -584,7 +634,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                     setViewMode('dashboard');
                     setSelectedTownFilter('Bulawayo');
                   }}
-                  className="text-xs font-serif font-bold text-emerald-800 hover:text-emerald-950 cursor-pointer"
+                  className="text-xs font-serif font-bold text-[#2563EB] hover:text-blue-900 cursor-pointer"
                 >
                   All Bulawayo Dispatches &rarr;
                 </button>
@@ -608,17 +658,26 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                     onClick={() => setActiveStoryModal(story)}
                     className="p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200 space-y-1.5"
                   >
-                    <div className="flex items-center gap-1 text-[10px] font-mono text-slate-500">
-                      <span>{story.categoryLabel}</span>
-                      <span>·</span>
-                      <span>{story.readTimeMinutes} min read</span>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
+                      <span>{story.categoryLabel} · {story.readTimeMinutes} min</span>
+                      <span className="flex items-center gap-1 text-[#2563EB]">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{(story.comments || []).length}</span>
+                      </span>
                     </div>
-                    <h4 className="font-serif font-bold text-slate-900 text-sm leading-snug hover:text-emerald-800 transition-colors">
+                    <h4 className="font-serif font-bold text-slate-900 text-sm leading-snug hover:text-[#2563EB] transition-colors">
                       {story.title}
                     </h4>
                     <p className="text-xs text-slate-600 font-serif line-clamp-2 leading-relaxed">
                       {story.summary}
                     </p>
+                    {story.syndicatedMediaOutlets && story.syndicatedMediaOutlets.length > 0 && (
+                      <div className="flex items-center gap-1 text-[9px] text-[#2563EB] font-bold pt-0.5">
+                        <span>📻</span>
+                        <span>{story.syndicatedMediaOutlets[0]}</span>
+                        <span className="bg-blue-50 text-[8px] px-1 rounded uppercase">RECOGNISED</span>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
@@ -878,25 +937,57 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                       </p>
 
                       {/* Location or Route */}
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1 mb-2">
+                      <div className="text-[11px] text-[#64748B] flex items-center gap-1 mb-2">
                         <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Route: <strong className="text-slate-700">{story.locationOrRoute}</strong></span>
+                        <span>Route: <strong className="text-[#111827]">{story.locationOrRoute}</strong></span>
                       </div>
+
+                      {/* Syndicated Media Partners (if applicable) */}
+                      {story.syndicatedMediaOutlets && story.syndicatedMediaOutlets.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 mb-3 pt-1">
+                          <span className="text-[10px] font-mono text-[#64748B]">Wired to:</span>
+                          {story.syndicatedMediaOutlets.slice(0, 3).map((outlet) => (
+                            <span
+                              key={outlet}
+                              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded text-[10px] font-medium text-[#0B1220]"
+                            >
+                              <span>{outlet.includes('Radio') || outlet.includes('FM') ? '📻' : '📰'}</span>
+                              <span>{outlet}</span>
+                            </span>
+                          ))}
+                          {story.syndicatedMediaOutlets.length > 3 && (
+                            <span className="text-[10px] font-bold text-[#2563EB]">
+                              +{story.syndicatedMediaOutlets.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Footer with Source & Read Action */}
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500 text-[11px]">
-                        Source: <strong className="text-slate-700 font-medium">{story.source}</strong>
+                    {/* Footer with Source, Comments Count & Read Action */}
+                    <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs">
+                      <span className="text-[#64748B] text-[11px]">
+                        Source: <strong className="text-[#111827] font-medium">{story.source}</strong>
                       </span>
 
-                      <button
-                        onClick={() => setActiveStoryModal(story)}
-                        className="font-semibold text-emerald-700 hover:text-emerald-900 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        View Details
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setActiveStoryModal(story)}
+                          className="flex items-center gap-1 text-[11px] text-[#64748B] hover:text-[#2563EB] cursor-pointer transition-colors"
+                          title="View reader comments"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>{(story.comments || []).length}</span>
+                        </button>
+
+                        <button
+                          onClick={() => setActiveStoryModal(story)}
+                          className="font-semibold text-[#2563EB] hover:text-blue-800 transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          Read & Comment
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -909,38 +1000,38 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
       {/* ─────────────────────────────────────────────────────────────
           STORY DETAIL & READER MODAL (FULL NEWSPAPER ARTICLE)
       ───────────────────────────────────────────────────────────── */}
-      {activeStoryModal && (
+      {currentModalStory && (
         <div className="fixed inset-0 z-[2000] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-2xl border-2 border-slate-900 max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl border-2 border-[#0B1220] max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header Masthead Bar */}
-            <div className="px-6 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div className="px-6 py-3.5 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F1F5F9]">
               <div className="flex items-center gap-3">
-                <span className="font-serif font-black text-xs uppercase tracking-wider text-slate-900">
+                <span className="font-serif font-black text-xs uppercase tracking-wider text-[#0B1220]">
                   The Highway Gazette
                 </span>
                 <span className="text-slate-300">|</span>
-                <span className="text-xs font-mono text-slate-500">{activeStoryModal.publishedAt}</span>
+                <span className="text-xs font-mono text-[#64748B]">{currentModalStory.publishedAt}</span>
               </div>
 
               {/* Reader Controls */}
               <div className="flex items-center gap-2">
                 {/* Font Size Selector */}
-                <div className="hidden sm:flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 text-[11px] font-mono">
+                <div className="hidden sm:flex items-center gap-1 bg-white border border-[#E2E8F0] rounded-lg p-0.5 text-[11px] font-mono">
                   <button
                     onClick={() => setReaderFontSize('sm')}
-                    className={`px-2 py-0.5 rounded cursor-pointer ${readerFontSize === 'sm' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600'}`}
+                    className={`px-2 py-0.5 rounded cursor-pointer ${readerFontSize === 'sm' ? 'bg-[#0B1220] text-white font-bold' : 'text-[#64748B]'}`}
                   >
                     A-
                   </button>
                   <button
                     onClick={() => setReaderFontSize('base')}
-                    className={`px-2 py-0.5 rounded cursor-pointer ${readerFontSize === 'base' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600'}`}
+                    className={`px-2 py-0.5 rounded cursor-pointer ${readerFontSize === 'base' ? 'bg-[#0B1220] text-white font-bold' : 'text-[#64748B]'}`}
                   >
                     A
                   </button>
                   <button
                     onClick={() => setReaderFontSize('lg')}
-                    className={`px-2 py-0.5 rounded cursor-pointer ${readerFontSize === 'lg' ? 'bg-slate-900 text-white font-bold' : 'text-slate-600'}`}
+                    className={`px-2 py-0.5 rounded cursor-pointer ${readerFontSize === 'lg' ? 'bg-[#0B1220] text-white font-bold' : 'text-[#64748B]'}`}
                   >
                     A+
                   </button>
@@ -949,7 +1040,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                 {/* Print button */}
                 <button
                   onClick={handlePrintStory}
-                  className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                  className="p-1.5 text-[#64748B] hover:text-[#0B1220] rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
                   title="Print Newspaper Article"
                 >
                   <Printer className="w-4 h-4" />
@@ -957,12 +1048,12 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
 
                 {/* Bookmark button */}
                 <button
-                  onClick={() => onToggleBookmark(activeStoryModal.id)}
-                  className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                  onClick={() => onToggleBookmark(currentModalStory.id)}
+                  className="p-1.5 text-[#64748B] hover:text-[#0B1220] rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
                   title="Bookmark"
                 >
-                  {bookmarkedIds.includes(activeStoryModal.id) ? (
-                    <BookmarkCheck className="w-4 h-4 text-emerald-600" />
+                  {bookmarkedIds.includes(currentModalStory.id) ? (
+                    <BookmarkCheck className="w-4 h-4 text-[#16A34A]" />
                   ) : (
                     <Bookmark className="w-4 h-4" />
                   )}
@@ -970,8 +1061,8 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
 
                 {/* Share button */}
                 <button
-                  onClick={() => handleShareStory(activeStoryModal)}
-                  className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                  onClick={() => handleShareStory(currentModalStory)}
+                  className="p-1.5 text-[#64748B] hover:text-[#0B1220] rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
                   title="Share"
                 >
                   <Share2 className="w-4 h-4" />
@@ -980,7 +1071,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                 {/* Close */}
                 <button
                   onClick={() => setActiveStoryModal(null)}
-                  className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-900 rounded-lg text-lg font-bold cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center text-[#64748B] hover:text-[#0B1220] rounded-lg text-lg font-bold cursor-pointer"
                 >
                   ✕
                 </button>
@@ -988,11 +1079,11 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
             </div>
 
             {/* Audio Reader Simulated Bar */}
-            <div className="bg-emerald-950 text-white px-6 py-2 flex items-center justify-between text-xs">
+            <div className="bg-[#0B1220] text-white px-6 py-2 flex items-center justify-between text-xs border-b border-[#1E293B]">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                  className="px-2 py-1 bg-emerald-700 hover:bg-emerald-600 rounded font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="px-2.5 py-1 bg-[#2563EB] hover:bg-blue-600 rounded font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   {isPlayingAudio ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                   <span>{isPlayingAudio ? 'Pause Audio' : 'Listen to Dispatch'}</span>
@@ -1005,51 +1096,51 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-4 font-serif">
+            <div className="p-6 overflow-y-auto space-y-5 font-serif">
               {/* Optional Photo */}
-              {activeStoryModal.imageUrl && (
-                <div className="rounded-xl overflow-hidden border border-slate-300">
+              {currentModalStory.imageUrl && (
+                <div className="rounded-xl overflow-hidden border border-[#E2E8F0]">
                   <img
-                    src={activeStoryModal.imageUrl}
-                    alt={activeStoryModal.title}
+                    src={currentModalStory.imageUrl}
+                    alt={currentModalStory.title}
                     className="w-full h-56 sm:h-72 object-cover"
                   />
-                  <div className="p-2 bg-slate-50 text-[11px] text-slate-600 font-sans border-t border-slate-200">
-                    Official Gazette Press Asset · Captured along {activeStoryModal.locationOrRoute}
+                  <div className="p-2 bg-[#F1F5F9] text-[11px] text-[#64748B] font-sans border-t border-[#E2E8F0]">
+                    Official Gazette Press Asset · Captured along {currentModalStory.locationOrRoute}
                   </div>
                 </div>
               )}
 
               {/* Title & Byline */}
               <div>
-                <div className="text-xs font-mono text-emerald-800 uppercase font-bold mb-1">
-                  {activeStoryModal.categoryLabel} · {activeStoryModal.locationOrRoute}
+                <div className="text-xs font-mono text-[#2563EB] uppercase font-bold mb-1">
+                  {currentModalStory.categoryLabel} · {currentModalStory.locationOrRoute}
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-serif font-black text-slate-950 tracking-tight leading-tight">
-                  {activeStoryModal.title}
+                <h1 className="text-2xl sm:text-3xl font-serif font-black text-[#111827] tracking-tight leading-tight">
+                  {currentModalStory.title}
                 </h1>
               </div>
 
               {/* Byline and Source */}
-              <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-slate-600 pb-3 border-b border-slate-200">
-                <span>By <strong>{activeStoryModal.author}</strong></span>
+              <div className="flex flex-wrap items-center gap-3 text-xs font-sans text-[#64748B] pb-3 border-b border-[#E2E8F0]">
+                <span>By <strong>{currentModalStory.author}</strong></span>
                 <span>·</span>
-                <span>Source: <strong>{activeStoryModal.source}</strong></span>
+                <span>Source: <strong>{currentModalStory.source}</strong></span>
                 <span>·</span>
-                <span>Verification: <strong className="capitalize text-emerald-800">{activeStoryModal.verificationStatus}</strong></span>
+                <span>Verification: <strong className="capitalize text-[#16A34A]">{currentModalStory.verificationStatus}</strong></span>
               </div>
 
               {/* Alternative Route if present */}
-              {activeStoryModal.alternativeRoute && (
-                <div className="p-3 bg-slate-50 border-l-4 border-emerald-700 rounded-r-lg font-sans text-xs">
-                  <span className="font-bold text-slate-900 block mb-0.5">Navigational Advisory:</span>
-                  <p className="text-slate-700">{activeStoryModal.alternativeRoute}</p>
+              {currentModalStory.alternativeRoute && (
+                <div className="p-3 bg-[#F1F5F9] border-l-4 border-[#2563EB] rounded-r-lg font-sans text-xs">
+                  <span className="font-bold text-[#111827] block mb-0.5">Navigational Advisory:</span>
+                  <p className="text-[#64748B]">{currentModalStory.alternativeRoute}</p>
                 </div>
               )}
 
               {/* Story Paragraphs with reader font size */}
               <div
-                className={`space-y-4 text-slate-800 leading-relaxed ${
+                className={`space-y-4 text-[#111827] leading-relaxed ${
                   readerFontSize === 'sm'
                     ? 'text-xs'
                     : readerFontSize === 'lg'
@@ -1057,7 +1148,7 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
                     : 'text-sm sm:text-base'
                 }`}
               >
-                {activeStoryModal.content.map((paragraph, idx) => (
+                {currentModalStory.content.map((paragraph, idx) => (
                   <p key={idx} className={idx === 0 ? 'first-letter:text-4xl first-letter:font-black first-letter:float-left first-letter:pr-2' : ''}>
                     {paragraph}
                   </p>
@@ -1065,18 +1156,185 @@ export const NewsFeed: React.FC<NewsFeedProps> = ({
               </div>
 
               {/* Tags */}
-              <div className="pt-4 border-t border-slate-200 flex items-center gap-2 text-xs font-sans text-slate-500">
-                <span className="font-bold text-slate-700">Tags:</span>
-                <span>{activeStoryModal.tags.join(' · ')}</span>
+              <div className="pt-3 border-t border-[#E2E8F0] flex items-center gap-2 text-xs font-sans text-[#64748B]">
+                <span className="font-bold text-[#111827]">Tags:</span>
+                <span>{currentModalStory.tags.join(' · ')}</span>
+              </div>
+
+              {/* MEDIA SYNDICATION & RECOGNISED OUTLETS SECTION */}
+              <div className="p-4 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl font-sans space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Radio className="w-4 h-4 text-[#2563EB]" />
+                    <span className="font-bold text-xs text-[#0B1220] uppercase tracking-wide">
+                      Recognised Media Syndication & Broadcast Wire
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#16A34A] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" />
+                    Officially Accredited Media Partners
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#64748B] leading-relaxed">
+                  This report has been syndicated directly to verified Zimbabwean news organisations and broadcasters for immediate public transmission and national recognition:
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {(currentModalStory.syndicatedMediaOutlets && currentModalStory.syndicatedMediaOutlets.length > 0
+                    ? currentModalStory.syndicatedMediaOutlets
+                    : ['The Herald', 'ZBC News', 'The Chronicle', 'Star FM', 'NewsDay']
+                  ).map((outlet) => (
+                    <div
+                      key={outlet}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-xs font-medium text-[#111827] shadow-2xs"
+                    >
+                      <span className="text-sm">
+                        {outlet.includes('Radio') || outlet.includes('FM') || outlet.includes('Stereo') ? '📻' : outlet.includes('ZBC') ? '📺' : '📰'}
+                      </span>
+                      <span className="font-bold text-[#0B1220]">{outlet}</span>
+                      <span className="text-[9px] font-bold text-[#2563EB] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded uppercase tracking-wider ml-1">
+                        RECOGNISED
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {currentModalStory.syndicationConfirmedAt && (
+                  <div className="text-[10px] text-[#64748B] pt-1">
+                    Direct wire transmission confirmed at: <span className="font-mono text-[#0B1220]">{currentModalStory.syndicationConfirmedAt}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* EVERYDAY CITIZEN & MOTORIST COMMENTS */}
+              <div className="pt-4 border-t border-[#E2E8F0] font-sans space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-[#2563EB]" />
+                    <h3 className="font-bold text-sm text-[#0B1220]">
+                      Reader Reactions & Motorist Comments
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono text-[#64748B]">
+                    {(currentModalStory.comments || []).length} {(currentModalStory.comments || []).length === 1 ? 'comment' : 'comments'}
+                  </span>
+                </div>
+
+                {/* Comment posting notice */}
+                {commentSuccessNotice && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-[#16A34A] rounded-xl text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Your comment has been posted to this news dispatch. Thank you for informing fellow motorists!</span>
+                  </div>
+                )}
+
+                {/* Comment input form for everyday users */}
+                <form onSubmit={handleCommentSubmit} className="space-y-2.5 bg-[#F1F5F9] p-3.5 rounded-xl border border-[#E2E8F0]">
+                  <div className="flex items-center justify-between text-xs text-[#64748B]">
+                    <span className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#0B1220] text-white flex items-center justify-center font-bold text-[10px]">
+                        {currentUserProfile?.name ? currentUserProfile.name.charAt(0) : 'U'}
+                      </span>
+                      <span className="font-semibold text-[#111827]">
+                        Posting as {currentUserProfile?.name || 'Everyday Road User'}
+                      </span>
+                      <span className="text-[10px] bg-white border border-[#E2E8F0] px-1.5 py-0.5 rounded text-[#2563EB] font-bold capitalize">
+                        {currentUserProfile?.role || 'Motorist'}
+                      </span>
+                    </span>
+                    <span className="text-[10px] text-[#64748B] hidden sm:inline">Open to all community road users</span>
+                  </div>
+
+                  <div className="relative">
+                    <textarea
+                      rows={2}
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
+                      placeholder="Add your observation, road condition update, or thoughts on this report..."
+                      className="w-full px-3 py-2 text-xs bg-white border border-[#E2E8F0] rounded-lg text-[#111827] placeholder:text-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-0.5">
+                    <span className="text-[10px] text-[#64748B]">
+                      Everyday driver contributions help verify road conditions.
+                    </span>
+                    <button
+                      type="submit"
+                      disabled={!commentInput.trim()}
+                      className="px-4 py-1.5 bg-[#2563EB] hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Post Comment</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* List of comments */}
+                <div className="space-y-2.5">
+                  {(!currentModalStory.comments || currentModalStory.comments.length === 0) ? (
+                    <div className="text-center py-6 bg-slate-50/50 rounded-xl border border-dashed border-[#E2E8F0]">
+                      <MessageSquare className="w-6 h-6 text-slate-300 mx-auto mb-1.5" />
+                      <p className="text-xs font-semibold text-[#111827]">No reader comments yet</p>
+                      <p className="text-[11px] text-[#64748B] mt-0.5">
+                        Be the first road user to leave an update or feedback on this bulletin!
+                      </p>
+                    </div>
+                  ) : (
+                    currentModalStory.comments.map((comment) => {
+                      const isLiked = likedCommentIds.includes(comment.id);
+                      const totalLikes = (comment.likesCount || 0) + (isLiked ? 1 : 0);
+
+                      return (
+                        <div
+                          key={comment.id}
+                          className="p-3 bg-white border border-[#E2E8F0] rounded-xl text-xs space-y-1.5 hover:border-slate-300 transition-colors shadow-2xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-[#0B1220] text-white flex items-center justify-center font-bold text-[10px]">
+                                {comment.userName.charAt(0)}
+                              </div>
+                              <span className="font-bold text-[#111827]">{comment.userName}</span>
+                              {comment.userRole && (
+                                <span className="text-[10px] bg-[#F1F5F9] text-[#64748B] px-1.5 py-0.5 rounded font-mono capitalize border border-[#E2E8F0]">
+                                  {comment.userRole}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] font-mono text-[#64748B]">{comment.timestamp}</span>
+                          </div>
+
+                          <p className="text-xs text-[#111827] leading-relaxed pl-8">
+                            {comment.text}
+                          </p>
+
+                          <div className="pl-8 pt-1 flex items-center gap-3 text-[11px] text-[#64748B]">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleLikeComment(comment.id)}
+                              className={`flex items-center gap-1 hover:text-[#2563EB] cursor-pointer transition-colors ${
+                                isLiked ? 'text-[#2563EB] font-bold' : ''
+                              }`}
+                            >
+                              <ThumbsUp className="w-3.5 h-3.5" />
+                              <span>{totalLikes > 0 ? `${totalLikes} Helpful` : 'Helpful'}</span>
+                            </button>
+                            <span>·</span>
+                            <span className="text-[10px] text-[#64748B]">Verified Road User</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs font-sans text-slate-600">
-              <span>{shareSuccess ? '✓ Link & citation copied to clipboard!' : 'The Highway Gazette · Verified Transport Dispatch'}</span>
+            <div className="px-6 py-3 bg-[#F1F5F9] border-t border-[#E2E8F0] flex items-center justify-between text-xs font-sans text-[#64748B]">
+              <span>{shareSuccess ? '✓ Link & citation copied to clipboard!' : 'The Highway Gazette · Verified Transport Dispatch & National Wire'}</span>
               <button
                 onClick={() => setActiveStoryModal(null)}
-                className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold cursor-pointer transition-colors"
+                className="px-4 py-1.5 bg-[#0B1220] hover:bg-slate-800 text-white rounded-lg font-bold cursor-pointer transition-colors"
               >
                 Done Reading
               </button>

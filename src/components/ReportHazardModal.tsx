@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RoadIncident, IncidentSeverity, IncidentCategory, ZimbabweHighway, ZimbabweTown, UserRole } from '../types';
-import { AlertTriangle, MapPin, Navigation, Camera, X, CheckCircle, ShieldAlert, Car, HardHat, Clock, Calendar } from 'lucide-react';
+import { AlertTriangle, MapPin, Navigation, Camera, X, CheckCircle, ShieldAlert, ShieldCheck, Send, Car, HardHat, Clock, Calendar } from 'lucide-react';
 
 interface ReportHazardModalProps {
   isOpen: boolean;
@@ -79,6 +79,21 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [gpsLocked, setGpsLocked] = useState<boolean>(false);
   const [photoAdded, setPhotoAdded] = useState<boolean>(false);
+  const [syndicateToMedia, setSyndicateToMedia] = useState<boolean>(true);
+  const [selectedOutlets, setSelectedOutlets] = useState<string[]>([
+    'The Herald',
+    'ZBC News',
+    'The Chronicle',
+    'Star FM',
+  ]);
+
+  const AVAILABLE_MEDIA_OUTLETS = [
+    { id: 'herald', name: 'The Herald', tag: 'National Press' },
+    { id: 'zbc', name: 'ZBC News', tag: 'National Broadcaster' },
+    { id: 'chronicle', name: 'The Chronicle', tag: 'Bulawayo & Southern Bureau' },
+    { id: 'starfm', name: 'Star FM Traffic Desk', tag: 'Radio Dispatch' },
+    { id: 'newsday', name: 'NewsDay Zimbabwe', tag: 'National Daily' },
+  ];
 
   React.useEffect(() => {
     if (initialCoords) {
@@ -120,6 +135,12 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
     }
   };
 
+  const toggleOutlet = (outletName: string) => {
+    setSelectedOutlets((prev) =>
+      prev.includes(outletName) ? prev.filter((o) => o !== outletName) : [...prev, outletName]
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -140,6 +161,8 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
       approximateAreaLabel: isApproximateLocation ? `General ${town} area` : undefined,
       severity,
       verificationStatus: currentUserRole === 'moderator' ? 'verified' : 'reported',
+      sentToAdministrator: true,
+      syndicatedMediaOutlets: syndicateToMedia ? selectedOutlets : [],
       timestamp: 'Just now',
       dateObserved,
       timeObserved,
@@ -440,6 +463,71 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
             </div>
           </div>
 
+          {/* Administrator Verification & Dispatch Notice */}
+          <div className="bg-[#2563EB]/10 border border-[#2563EB]/30 rounded-xl p-3.5 space-y-1.5 text-xs">
+            <div className="flex items-center gap-2 text-[#2563EB] font-bold">
+              <ShieldCheck className="w-4 h-4 text-[#2563EB] flex-shrink-0" />
+              <span>Direct Routing: Administrator & Safety Desk Verification</span>
+            </div>
+            <p className="text-[#111827] text-[11px] leading-relaxed">
+              When you submit, your report is queued directly to the <strong>RoadLink Highway Safety Administrator</strong> operations desk for official corridor verification, status cross-checking, and emergency alert broadcast.
+            </p>
+          </div>
+
+          {/* Media Organisations Syndication & Press Wire */}
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3.5 space-y-2.5 text-xs shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#F97316] animate-pulse"></span>
+                <span className="font-bold text-[#111827]">Syndicate to National Media Organisations</span>
+              </div>
+              <label className="flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold text-[#2563EB]">
+                <input
+                  type="checkbox"
+                  checked={syndicateToMedia}
+                  onChange={(e) => setSyndicateToMedia(e.target.checked)}
+                  className="rounded text-[#2563EB] focus:ring-0 cursor-pointer"
+                />
+                <span>Wire to Press</span>
+              </label>
+            </div>
+
+            <p className="text-[11px] text-[#64748B] leading-relaxed">
+              Recognise your eyewitness report across Zimbabwe’s mainstream news and radio stations. Accredited newsrooms receive this report instantly with your reporter attribution.
+            </p>
+
+            {syndicateToMedia && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
+                {AVAILABLE_MEDIA_OUTLETS.map((outlet) => {
+                  const isChecked = selectedOutlets.includes(outlet.name);
+                  return (
+                    <button
+                      type="button"
+                      key={outlet.id}
+                      onClick={() => toggleOutlet(outlet.name)}
+                      className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                        isChecked
+                          ? 'bg-[#2563EB]/10 border-[#2563EB]/40 text-[#111827]'
+                          : 'bg-[#F1F5F9] border-[#E2E8F0] text-[#64748B] hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">{isChecked ? '✓' : '○'}</span>
+                        <div>
+                          <div className="font-bold text-[11px] text-[#111827]">{outlet.name}</div>
+                          <div className="text-[9px] text-[#64748B]">{outlet.tag}</div>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white text-[#2563EB] border border-[#E2E8F0] font-semibold">
+                        RECOGNISED
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Action Buttons */}
           <div className="pt-2 flex items-center justify-end gap-2">
             <button
@@ -451,9 +539,10 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-md"
+              className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-md flex items-center gap-1.5"
             >
-              Publish Report to Network
+              <Send className="w-3.5 h-3.5" />
+              <span>Submit to Administrator & Media</span>
             </button>
           </div>
         </form>

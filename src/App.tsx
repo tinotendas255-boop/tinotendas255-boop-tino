@@ -14,6 +14,7 @@ import {
   WeatherTravelAlert,
   NewsStory,
   RoutePreviewData,
+  StoryComment,
 } from './types';
 import {
   getStoredIncidents,
@@ -127,6 +128,31 @@ export default function App() {
     setNewsStories(updated);
     saveStoredNewsStories(updated);
     showToast('Dispatch deleted from national wire');
+  };
+
+  // Add Comment to news dispatch / bulletin
+  const handleAddStoryComment = (storyId: string, text: string) => {
+    const newComment: StoryComment = {
+      id: `comm-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      userName: userProfile.name || 'Everyday Road User',
+      userRole: userProfile.role,
+      text: text.trim(),
+      timestamp: 'Just now',
+      likesCount: 0,
+    };
+
+    const updated = newsStories.map((story) => {
+      if (story.id !== storyId) return story;
+      const existing = story.comments || [];
+      return {
+        ...story,
+        comments: [newComment, ...existing],
+      };
+    });
+
+    setNewsStories(updated);
+    saveStoredNewsStories(updated);
+    showToast('Your comment was posted to the news bulletin.');
   };
 
   // Save profile
@@ -537,6 +563,8 @@ export default function App() {
             onToggleBookmark={handleToggleBookmark}
             onNavigateTab={(tab) => setActiveTab(tab)}
             onSelectHighway={(h) => handleSelectHighwayOnMap(h)}
+            onAddStoryComment={handleAddStoryComment}
+            currentUserProfile={userProfile}
           />
         )}
 

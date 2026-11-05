@@ -158,6 +158,32 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
             </div>
           </div>
 
+          {/* Media Organisations Syndication Recognition Strip */}
+          {incident.syndicatedMediaOutlets && incident.syndicatedMediaOutlets.length > 0 && (
+            <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3 space-y-1.5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-[#111827] flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
+                  Syndicated to Mainstream Media Organisations
+                </span>
+                <span className="text-[10px] text-[#2563EB] font-mono font-semibold uppercase bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                  RECOGNISED
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {incident.syndicatedMediaOutlets.map((outlet, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-0.5 rounded-md bg-[#F1F5F9] border border-[#E2E8F0] text-[#111827] text-[11px] font-medium flex items-center gap-1"
+                  >
+                    <span>📰</span>
+                    <span>{outlet}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           <div>
             <h4 className="text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1">
