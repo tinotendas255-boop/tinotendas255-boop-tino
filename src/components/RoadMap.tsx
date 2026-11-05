@@ -626,11 +626,52 @@ export const RoadMap: React.FC<RoadMapProps> = ({
               </div>
             </div>
 
-            {/* Road conditions pill */}
-            <div className="text-[11px] text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg p-2 flex items-center justify-between gap-2">
-              <span className="truncate">🛣️ {displayedRoute.roadCondition.split('·')[0]}</span>
-              <span className="font-semibold text-[#16A34A] flex-shrink-0">✓ No Roadblocks</span>
-            </div>
+            {/* Corridor Obstacles & Road conditions pill */}
+            {(() => {
+              const routeObstacles = incidents.filter(
+                (inc) =>
+                  inc.status !== 'resolved' &&
+                  (inc.highway.toLowerCase().includes(displayedRoute.highwayCode.toLowerCase()) ||
+                    inc.locationName.toLowerCase().includes(displayedRoute.destination.toLowerCase()) ||
+                    inc.locationName.toLowerCase().includes(displayedRoute.origin.toLowerCase()))
+              );
+              const roadblockCount = routeObstacles.filter((i) => i.category === 'checkpoint' || i.title.toLowerCase().includes('roadblock')).length;
+              const accidentCount = routeObstacles.filter((i) => i.category === 'accident' || i.severity === 'critical').length;
+
+              return (
+                <div className="text-[11px] bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg p-2.5 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate text-[#111827] font-medium">🛣️ {displayedRoute.roadCondition.split('·')[0]}</span>
+                    {routeObstacles.length === 0 ? (
+                      <span className="font-semibold text-[#16A34A] flex-shrink-0 text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                        ✓ Clear Corridor
+                      </span>
+                    ) : (
+                      <span className="font-bold text-amber-700 flex-shrink-0 text-[10px] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-600" />
+                        {routeObstacles.length} Obstacles on Map
+                      </span>
+                    )}
+                  </div>
+
+                  {routeObstacles.length > 0 && (
+                    <div className="flex items-center gap-2 pt-1 border-t border-slate-200 text-[10px] flex-wrap">
+                      {roadblockCount > 0 && (
+                        <span className="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                          👮 {roadblockCount} Roadblock / Checkpoint
+                        </span>
+                      )}
+                      {accidentCount > 0 && (
+                        <span className="inline-flex items-center gap-1 font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                          💥 {accidentCount} Accident Obstacle
+                        </span>
+                      )}
+                      <span className="text-slate-500 font-mono text-[9px]">Pins shown on map</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Actions & Steps */}

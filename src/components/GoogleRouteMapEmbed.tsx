@@ -161,21 +161,26 @@ export const GoogleRouteMapEmbed: React.FC<GoogleRouteMapEmbedProps> = ({
         .addTo(map);
     });
 
-    // Corridor Hazards Pins
+    // Corridor Hazards / Obstacles Pins (Roadblocks, Accidents, Roadworks)
     corridorHazards.forEach((hazard) => {
+      const isRoadblock = hazard.category === 'checkpoint' || hazard.title.toLowerCase().includes('roadblock');
+      const isAccident = hazard.category === 'accident' || hazard.severity === 'critical';
+      const bgColor = isAccident ? '#d93025' : isRoadblock ? '#1a73e8' : '#f29900';
+      const iconEmoji = isAccident ? '💥' : isRoadblock ? '👮' : '⚠️';
+
       const hazardIcon = L.divIcon({
         className: 'google-hazard-pin',
         html: `
-          <div style="background: #ea4335; border: 2px solid #ffffff; border-radius: 50%; width: 24px; height: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: bold;">
-            ⚠️
+          <div style="background: ${bgColor}; border: 2px solid #ffffff; border-radius: 50%; width: 28px; height: 28px; box-shadow: 0 3px 6px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: transform 0.2s;" title="${hazard.title}">
+            ${iconEmoji}
           </div>
         `,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
       });
 
       L.marker(hazard.coordinates, { icon: hazardIcon })
-        .bindTooltip(`<strong>${hazard.title}</strong><br/>${hazard.locationName}`, { direction: 'top' })
+        .bindTooltip(`<strong>${isRoadblock ? '👮 ROADBLOCK / CHECKPOINT' : isAccident ? '💥 ACCIDENT OBSTACLE' : '⚠️ HAZARD'}:</strong> ${hazard.title}<br/><span style="color:#64748B;">${hazard.locationName}</span>`, { direction: 'top' })
         .addTo(map);
     });
 
@@ -278,32 +283,46 @@ export const GoogleRouteMapEmbed: React.FC<GoogleRouteMapEmbedProps> = ({
       </div>
 
       {/* 3. Trip Specs & Hazards Ribbon */}
-      <div className="p-3 bg-[#0B1220] border-t border-[#1E293B] grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+      <div className="p-3 bg-[#0B1220] border-t border-[#1E293B] grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
         <div className="flex items-center gap-2 bg-[#111C2E] p-2 rounded-lg border border-[#1E293B]">
           <Coins className="w-4 h-4 text-[#F97316] flex-shrink-0" />
           <div className="overflow-hidden">
             <div className="text-[10px] text-[#94A3B8] uppercase font-semibold">ZINARA Toll</div>
             <div className="text-[11px] font-bold text-white truncate">
-              {route.tollCount > 0 ? `${route.tollCount} Gate ($${route.tollFeeUsd} USD / ${route.tollFeeZiG} ZiG)` : 'Toll Free'}
+              {route.tollCount > 0 ? `${route.tollCount} Gate ($${route.tollFeeUsd})` : 'Toll Free'}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 bg-[#111C2E] p-2 rounded-lg border border-[#1E293B]">
-          <ShieldCheck className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-[#60A5FA] flex-shrink-0" />
           <div className="overflow-hidden">
             <div className="text-[10px] text-[#94A3B8] uppercase font-semibold">Roadblocks</div>
-            <div className="text-[11px] font-bold text-[#16A34A] truncate">
-              {corridorHazards.length === 0 ? '0 Reported (Clear)' : `${corridorHazards.length} Advisories`}
+            <div className="text-[11px] font-bold text-[#60A5FA] truncate">
+              {corridorHazards.filter(h => h.category === 'checkpoint' || h.title.toLowerCase().includes('roadblock')).length > 0
+                ? `${corridorHazards.filter(h => h.category === 'checkpoint' || h.title.toLowerCase().includes('roadblock')).length} Active Checkpoint`
+                : '0 (Clear)'}
             </div>
           </div>
         </div>
 
-        <div className="col-span-2 sm:col-span-1 flex items-center gap-2 bg-[#111C2E] p-2 rounded-lg border border-[#1E293B]">
-          <Milestone className="w-4 h-4 text-[#60A5FA] flex-shrink-0" />
+        <div className="flex items-center gap-2 bg-[#111C2E] p-2 rounded-lg border border-[#1E293B]">
+          <AlertTriangle className="w-4 h-4 text-rose-500 flex-shrink-0" />
           <div className="overflow-hidden">
-            <div className="text-[10px] text-[#94A3B8] uppercase font-semibold">Surface</div>
-            <div className="text-[11px] font-bold text-slate-200 truncate">{route.roadCondition.split('·')[0]}</div>
+            <div className="text-[10px] text-[#94A3B8] uppercase font-semibold">Accidents</div>
+            <div className="text-[11px] font-bold text-rose-400 truncate">
+              {corridorHazards.filter(h => h.category === 'accident' || h.severity === 'critical').length > 0
+                ? `${corridorHazards.filter(h => h.category === 'accident' || h.severity === 'critical').length} Collision Zone`
+                : '0 (Clear)'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 bg-[#111C2E] p-2 rounded-lg border border-[#1E293B]">
+          <Milestone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <div className="overflow-hidden">
+            <div className="text-[10px] text-[#94A3B8] uppercase font-semibold">Corridor Status</div>
+            <div className="text-[11px] font-bold text-slate-200 truncate">{corridorHazards.length > 0 ? `${corridorHazards.length} Marked Pins` : 'Clear Flow'}</div>
           </div>
         </div>
       </div>

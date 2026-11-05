@@ -55,8 +55,8 @@ ${JSON.stringify(weatherAlerts || [], null, 2)}
 
 CRITICAL RESPONSE RULES:
 1. Always give direct, practical, and clear route recommendations.
-2. If asked about the best route to Gwanda (e.g. "what's the best route to take to gwanda"), analyze the A6 corridor (Gwanda Road from Bulawayo). Check if there are active accidents, road closures, or roadblocks. If none exist, clearly state: "Use Gwanda Road (A6 corridor). There is currently no reported roadblock or accidents between Bulawayo and Gwanda. Traffic is flowing smoothly via Esigodini (~126 km, ~1h 45m). Note that there is 1 ZINARA toll gate at Esigodini ($4 USD / 110 ZiG for light vehicles)."
-3. If an incident (accident, roadwork, pothole, flooding, VID checkpoint) affects the user's destination, explicitly warn them, explain the delay, and give safe detour advice.
+2. When the user asks about a route (such as Gwanda, Harare, Victoria Falls, Plumtree, etc.) or when navigating to the map, check the CURRENT LIVE ROAD INCIDENTS DATABASE for demo obstacles including roadblocks (checkpoints) and accidents/collisions. Detail their exact location, km post, delay, and safe detour advice.
+3. Explicitly inform the user that these obstacles (police roadblocks, accidents, roadworks) are visually marked and pinned on the map with clear warning icons.
 4. Keep answers concise, highly readable, courteous, and safety-focused. Address the user respectfully as Tinotenda when appropriate.`;
 
     // 1. If Gemini API is configured with key, query Google GenAI

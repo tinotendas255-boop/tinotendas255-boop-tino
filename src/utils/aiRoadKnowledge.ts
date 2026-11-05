@@ -27,16 +27,17 @@ export const ROUTE_PREVIEWS: Record<string, RoutePreviewData> = {
       [-20.5800, 28.9800],
       [-20.9333, 29.0000],
     ],
-    roadCondition: 'Smooth asphalt · Visible lane markings · Dry corridor',
-    hazardsSummary: '0 Active Roadblocks · 0 Accident Obstructions Reported',
-    fastestRouteLabel: 'Fastest route · Via Gwanda Rd (A6)',
+    roadCondition: 'Asphalt corridor with police safety checkpoint & accident scene slowdown',
+    hazardsSummary: '⚠️ ZRP Roadblock at KM 28 · 💥 Collision Scene at KM 54 (Single Lane Flow)',
+    fastestRouteLabel: 'Caution on approach · Via Gwanda Rd (A6)',
     steps: [
       { instruction: 'Depart Bulawayo City Hall / CBD south-east via Leopold Takawira Ave', distanceKm: 4, icon: 'start' },
       { instruction: 'Pass Ascot Overpass and merge onto Gwanda Road (A6 Highway)', distanceKm: 18, icon: 'straight' },
-      { instruction: 'Pass Kensington suburb service oasis; maintain 100 km/h cruising speed', distanceKm: 20, icon: 'straight' },
-      { instruction: 'Approach Esigodini ZINARA Toll Plaza (KM 42) — automated E-Tag and cash lanes operational', distanceKm: 26, icon: 'toll' },
-      { instruction: 'Continue past Mbalabala junction (KM 68) — smooth asphalt corridor, 100 km/h limit', distanceKm: 38, icon: 'straight' },
-      { instruction: 'Arrive at Gwanda town center (126 km total)', distanceKm: 20, icon: 'destination' },
+      { instruction: '⚠️ ZRP & VID Roadblock at KM 28: have driver license & vehicle discs ready', distanceKm: 6, icon: 'checkpoint' },
+      { instruction: 'Approach Esigodini ZINARA Toll Plaza (KM 42) — automated E-Tag and cash lanes operational ($4 USD)', distanceKm: 14, icon: 'toll' },
+      { instruction: '💥 Accident Obstacle at KM 54: multi-vehicle collision clearing; follow marshals (30 km/h)', distanceKm: 12, icon: 'straight' },
+      { instruction: 'Pass Mbalabala junction (KM 68) — smooth asphalt corridor, 100 km/h limit', distanceKm: 14, icon: 'straight' },
+      { instruction: 'Arrive at Gwanda town center (126 km total)', distanceKm: 58, icon: 'destination' },
     ],
   },
   harare: {
@@ -282,30 +283,24 @@ export function generateRoadAssistantAnswer(
       (i) => i.category === 'checkpoint' || i.title.toLowerCase().includes('roadblock')
     );
 
-    if (gwandaIncidents.length === 0 || (!hasAccident && !hasRoadblock)) {
-      return {
-        reply: `Use Gwanda Road (A6 Highway Corridor). There is currently no reported road block or accidents on this route. Traffic is flowing smoothly from Bulawayo through Esigodini into Gwanda (~126 km, estimated travel time 1 hour 45 minutes).
+    const activeObstacles = gwandaIncidents
+      .map((i) => `• [${i.category === 'checkpoint' ? 'ROADBLOCK' : 'ACCIDENT'}] ${i.title} at ${i.locationName} (${i.severity.toUpperCase()}) — ${i.detourAdvice || i.description}`)
+      .join('\n');
 
-Key details for your trip:
-• Road Condition: Asphalt surface is in good condition with visible lane markings.
-• ZINARA Toll Plaza: 1 toll gate at Esigodini ($4 USD / 110 ZiG for light vehicles; $6 USD for minibuses). Automated E-Tag lanes active.
-• Fuel & Service: Stations operational in Bulawayo CBD, Kensington, and Esigodini center.
-• Weather: Clear conditions along the Matabeleland South corridor. Drive safely, ${userName}!`,
-        highlightRoute: 'A6',
-        badges: ['Route Clear', 'No Roadblocks', 'Zero Accidents'],
-        routePreview: ROUTE_PREVIEWS.gwanda,
-      };
-    } else {
-      const incidentList = gwandaIncidents
-        .map((i) => `• ${i.title} at ${i.locationName} (${i.severity.toUpperCase()})`)
-        .join('\n');
-      return {
-        reply: `For Gwanda, use Gwanda Road (A6 corridor). Please note the following active advisories:\n${incidentList}\n\nEsigodini toll plaza remains operational ($4 USD). Travel time is approximately 1h 45m. Drive carefully!`,
-        highlightRoute: 'A6',
-        badges: ['Caution Advised', 'A6 Corridor'],
-        routePreview: ROUTE_PREVIEWS.gwanda,
-      };
-    }
+    return {
+      reply: `For your journey from Bulawayo to Gwanda, take Gwanda Road (A6 Highway Corridor, ~126 km, ~1h 45m).
+${gwandaIncidents.length > 0 ? `\n🚨 LIVE CORRIDOR OBSTACLES DETECTED ON MAP:\n${activeObstacles}\n` : ''}
+Key Travel Guidance:
+• Police Checkpoint / Roadblock: Officers are conducting driver documentation & fire extinguisher checks at KM 28. Have your licence and ZINARA disc ready.
+• Accident Obstacle: A collision between Esigodini & Mbalabala (KM 54) has traffic moving in single-lane alternation. Slow down to 30 km/h on approach.
+• ZINARA Toll Plaza: Esigodini Toll Gate (KM 42) is operational ($4 USD / 110 ZiG for light passenger vehicles; $6 USD for minibuses). Automated E-Tag lanes flowing freely.
+• Fuel & Rest: Service stations open in Bulawayo, Kensington, and Gwanda town center.
+
+Click "Open in Full Interactive Map" below to see the interactive route line with real-time roadblock and accident obstacle pins plotted directly along the road!`,
+      highlightRoute: 'A6',
+      badges: ['Roadblock Plotted', 'Accident Obstacle Active', 'Esigodini Toll ($4)'],
+      routePreview: ROUTE_PREVIEWS.gwanda,
+    };
   }
 
   // 2. HARARE ROUTE (A5 Highway Corridor)
