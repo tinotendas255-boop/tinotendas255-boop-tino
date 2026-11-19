@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RouteOption, RoadIncident, ZimbabweHighway } from '../types';
 import { PRESET_ROUTES } from '../data/mockRoadData';
+import { getEffectiveIncidentStatus } from '../utils/mediaHouses';
 import { Navigation, Clock, ShieldCheck, AlertCircle, Fuel, Coins, ExternalLink, Printer, Share2, Check, ArrowRight } from 'lucide-react';
 
 interface RoutePlannerProps {
@@ -36,7 +37,7 @@ export const RoutePlanner: React.FC<RoutePlannerProps> = ({
   const corridorIncidents = incidents.filter(
     (inc) =>
       inc.highway.toLowerCase().includes(currentRoute.highwayCode.toLowerCase()) &&
-      inc.status !== 'resolved'
+      getEffectiveIncidentStatus(inc) !== 'resolved'
   );
 
   const vehicleData = VEHICLE_LABELS[selectedVehicle];

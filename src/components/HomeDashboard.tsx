@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RoadIncident, NewsStory, RouteOption, WeatherTravelAlert, UserProfile, ZimbabweTown, DriverType, UserRole } from '../types';
 import { PRESET_ROUTES, NEWS_STORIES } from '../data/mockRoadData';
+import { getEffectiveIncidentStatus } from '../utils/mediaHouses';
 import {
   Search,
   Navigation,
@@ -157,9 +158,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const PersonaIcon = personaConfig.icon;
 
   // Dynamic calculated metrics from available records
-  const activeIncidents = incidents.filter((i) => i.status !== 'resolved');
-  const verifiedIncidents = incidents.filter((i) => i.status === 'verified');
-  const unverifiedReports = incidents.filter((i) => i.status === 'unverified');
+  const activeIncidents = incidents.filter((i) => {
+    const eff = getEffectiveIncidentStatus(i);
+    return eff !== 'resolved' && eff !== 'dismissed';
+  });
+  const verifiedIncidents = incidents.filter((i) => getEffectiveIncidentStatus(i) === 'verified');
+  const unverifiedReports = incidents.filter((i) => getEffectiveIncidentStatus(i) === 'pending');
 
   // Saved routes
   const savedRoutes = PRESET_ROUTES.filter((r) => userProfile.savedRouteIds.includes(r.id));
@@ -167,7 +171,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   // Nearby incidents for selected town / base
   const nearbyIncidents = incidents.filter(
     (inc) =>
-      inc.status !== 'resolved' &&
+      getEffectiveIncidentStatus(inc) !== 'resolved' &&
       (inc.town === selectedTownFilter ||
         inc.locationName.toLowerCase().includes(selectedTownFilter.toLowerCase()) ||
         inc.highway.toLowerCase().includes(selectedTownFilter.toLowerCase()))
@@ -704,7 +708,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   </div>
                 )}
                 <div className="text-[10px] text-slate-500 mt-2 flex items-center justify-between">
-                  <span>{inc.status === 'verified' ? '✓ Verified by Safety Desk' : '⏳ Community Report'}</span>
+                  <span>{getEffectiveIncidentStatus(inc) === 'verified' ? '✓ Verified by Safety Desk' : '⏳ Community Report'}</span>
                   <span className="text-[#2563EB] font-semibold">View details &rarr;</span>
                 </div>
               </div>

@@ -1,4 +1,9 @@
 import { RoadIncident, HighwayCorridor, WeatherTravelAlert, UserProfile, RoutePreviewData, RouteStep } from '../types';
+import {
+  computeDynamicRouteWithAlternatives,
+  enrichRoutePreviewWithAlternatives,
+  parseOriginAndDestinationFromQuery,
+} from './routeEngine';
 
 export interface AssistantAnswer {
   reply: string;
@@ -208,25 +213,37 @@ export const ROUTE_PREVIEWS: Record<string, RoutePreviewData> = {
   },
 };
 
-export function detectRoutePreviewFromQuery(query: string): RoutePreviewData | undefined {
+export function detectRoutePreviewFromQuery(
+  query: string,
+  incidents: RoadIncident[] = [],
+  defaultOrigin = 'Bulawayo'
+): RoutePreviewData | undefined {
   const q = query.toLowerCase();
+
+  // Check if user specified an explicit origin and destination (e.g. "Harare to Mutare", "Gweru to Beitbridge")
+  const parsed = parseOriginAndDestinationFromQuery(query, defaultOrigin);
+  if (parsed) {
+    const dynamic = computeDynamicRouteWithAlternatives(parsed.origin, parsed.destination, incidents);
+    if (dynamic) return dynamic;
+  }
+
   if (q.includes('gwanda') || q.includes('esigodini') || (q.includes('a6') && !q.includes('beitbridge'))) {
-    return ROUTE_PREVIEWS.gwanda;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.gwanda, incidents);
   }
   if (q.includes('harare') || q.includes('gweru') || q.includes('kwekwe') || q.includes('kadoma') || q.includes('a5')) {
-    return ROUTE_PREVIEWS.harare;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.harare, incidents);
   }
   if (q.includes('victoria falls') || q.includes('vic falls') || q.includes('hwange') || q.includes('lupane') || q.includes('a8')) {
-    return ROUTE_PREVIEWS.victoria_falls;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.victoria_falls, incidents);
   }
   if (q.includes('plumtree') || q.includes('botswana') || q.includes('figtree') || q.includes('a7')) {
-    return ROUTE_PREVIEWS.plumtree;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.plumtree, incidents);
   }
   if (q.includes('beitbridge') || q.includes('south africa') || q.includes('colleen bawn')) {
-    return ROUTE_PREVIEWS.beitbridge;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.beitbridge, incidents);
   }
   if (q.includes('masvingo') || q.includes('zvishavane') || q.includes('filabusi') || q.includes('a9')) {
-    return ROUTE_PREVIEWS.masvingo;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.masvingo, incidents);
   }
   // If user says "route" or "map" or "directions" or "show me on the map", default to Gwanda
   if (
@@ -238,7 +255,7 @@ export function detectRoutePreviewFromQuery(query: string): RoutePreviewData | u
     q.includes('google map') ||
     q.includes('navigation')
   ) {
-    return ROUTE_PREVIEWS.gwanda;
+    return enrichRoutePreviewWithAlternatives(ROUTE_PREVIEWS.gwanda, incidents);
   }
   return undefined;
 }
@@ -261,7 +278,71 @@ export function generateRoadAssistantAnswer(
   const incidents = context.incidents || [];
   const weatherAlerts = context.weatherAlerts || [];
   const userName = context.userProfile?.name || 'Tinotenda Sibanda';
-  const detectedRoute = detectRoutePreviewFromQuery(query);
+  const userBaseTown = context.userProfile?.baseTown || 'Bulawayo';
+  const detectedRoute = detectRoutePreviewFromQuery(query, incidents, userBaseTown);
+
+  // 0. UNIVERSAL ORIGIN -> DESTINATION ROUTE HANDLER (Works from anywhere to anywhere in Zimbabwe!)
+  const parsedPair = parseOriginAndDestinationFromQuery(query, userBaseTown);
+  const isRouteIntent =
+    q.includes('route') ||
+    q.includes('how') ||
+    q.includes('go') ||
+    q.includes('drive') ||
+    q.includes('travel') ||
+    q.includes('directions') ||
+    q.includes('avoid') ||
+    q.includes('alternative') ||
+    q.includes('bypass') ||
+    q.includes('map') ||
+    q.includes(' to ');
+
+  if (parsedPair && isRouteIntent && detectedRoute) {
+    const alts = detectedRoute.alternativeRoutes || [];
+    const primary = alts[0];
+    const altBypass = alts[1];
+    const obstacles = primary?.obstaclesOnRoute || [];
+
+    const obstacleLines =
+      obstacles.length > 0
+        ? obstacles
+            .map(
+              (o) =>
+                `• [${o.category.toUpperCase()}] ${o.title} at ${o.locationName} — ${o.detourAdvice || o.description}`
+            )
+            .join('\n')
+        : '• No active accidents, roadblocks, or closures detected along the primary corridor.';
+
+    const altSummary = altBypass
+      ? `\n🔀 ALTERNATIVE ROUTE AVAILABLE:\n• ${altBypass.label}: ~${Math.floor(altBypass.estMinutes / 60)}h ${
+          altBypass.estMinutes % 60
+        }m (${altBypass.distanceKm} km) — ${altBypass.badgeText}${
+          altBypass.avoidedObstacles.length > 0
+            ? ` (Avoids ${altBypass.avoidedObstacles.map((a) => a.title).join(', ')})`
+            : ''
+        }`
+      : '';
+
+    return {
+      reply: `Route from ${detectedRoute.origin} to ${detectedRoute.destination} (Primary via ${detectedRoute.highwayCode}, ${detectedRoute.distanceKm} km, ~${Math.floor(
+        detectedRoute.estMinutes / 60
+      )}h ${detectedRoute.estMinutes % 60}m):
+
+🚨 LIVE OBSTACLES ALONG ROUTE (${obstacles.length}):
+${obstacleLines}
+${altSummary}
+
+• ZINARA Tolls: ${detectedRoute.tollCount} gate(s) ($${detectedRoute.tollFeeUsd} USD / ${detectedRoute.tollFeeZiG} ZiG).
+
+Click "Open in Full Interactive Map" below to see both the primary route, active obstacle markers, and the green alternative bypass route directly on the map!`,
+      highlightRoute: detectedRoute.highwayCode,
+      badges: [
+        `${detectedRoute.highwayCode} Route`,
+        obstacles.length > 0 ? `${obstacles.length} Obstacle${obstacles.length > 1 ? 's' : ''} Marked` : 'Clear Corridor',
+        altBypass ? 'Alternative Bypass Ready' : 'Live Map',
+      ],
+      routePreview: detectedRoute,
+    };
+  }
 
   // 1. GWANDA ROUTE (A6 Highway Corridor)
   if (
@@ -271,6 +352,7 @@ export function generateRoadAssistantAnswer(
   ) {
     const gwandaIncidents = incidents.filter(
       (i) =>
+        i.verificationStatus !== 'resolved' &&
         i.status !== 'resolved' &&
         (i.highway.toLowerCase().includes('a6') ||
           i.highway.toLowerCase().includes('gwanda') ||

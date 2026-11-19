@@ -160,26 +160,51 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
 
           {/* Media Organisations Syndication Recognition Strip */}
           {incident.syndicatedMediaOutlets && incident.syndicatedMediaOutlets.length > 0 && (
-            <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3 space-y-1.5 shadow-xs">
+            <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3 space-y-2 shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-[#111827] flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
-                  Syndicated to Mainstream Media Organisations
+                  Selected National Media Recipients
                 </span>
                 <span className="text-[10px] text-[#2563EB] font-mono font-semibold uppercase bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                  RECOGNISED
+                  {incident.mediaDispatchedAt ? 'DISPATCHED' : 'ROUTED'}
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {incident.syndicatedMediaOutlets.map((outlet, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2 py-0.5 rounded-md bg-[#F1F5F9] border border-[#E2E8F0] text-[#111827] text-[11px] font-medium flex items-center gap-1"
-                  >
-                    <span>📰</span>
-                    <span>{outlet}</span>
-                  </span>
-                ))}
+                {incident.syndicatedMediaOutlets.map((outlet, idx) => {
+                  const dispatch = incident.mediaDispatches?.find(
+                    (d) => d.outletName.toLowerCase() === outlet.toLowerCase()
+                  );
+                  const statusLabel =
+                    dispatch?.status === 'published'
+                      ? 'Published'
+                      : dispatch?.status === 'acknowledged'
+                      ? 'Received'
+                      : dispatch?.status === 'delivered'
+                      ? 'Delivered'
+                      : 'Pending Admin';
+
+                  return (
+                    <span
+                      key={idx}
+                      className="px-2 py-1 rounded-md bg-[#F1F5F9] border border-[#E2E8F0] text-[#111827] text-[11px] font-medium flex items-center gap-1.5"
+                    >
+                      <span>📰</span>
+                      <span className="font-semibold">{outlet}</span>
+                      <span
+                        className={`text-[9px] font-mono px-1 py-0.2 rounded font-bold ${
+                          dispatch?.status === 'published' || dispatch?.status === 'delivered'
+                            ? 'bg-[#16A34A]/15 text-[#16A34A]'
+                            : dispatch?.status === 'acknowledged'
+                            ? 'bg-[#2563EB]/15 text-[#2563EB]'
+                            : 'bg-[#F97316]/15 text-[#F97316]'
+                        }`}
+                      >
+                        {statusLabel}
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}

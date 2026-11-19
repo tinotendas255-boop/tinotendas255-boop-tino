@@ -15,6 +15,7 @@ import {
   NewsStory,
   RoutePreviewData,
   StoryComment,
+  MediaWireDelivery,
 } from './types';
 import {
   getStoredIncidents,
@@ -34,6 +35,8 @@ import {
   saveStoredNewsStories,
 } from './utils/storage';
 import { NEWS_STORIES } from './data/mockRoadData';
+import { computeDynamicRouteWithAlternatives } from './utils/routeEngine';
+import { getEffectiveIncidentStatus, normalizeMediaHouseList, normalizeMediaHouseName } from './utils/mediaHouses';
 import { Header } from './components/Header';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { HomeDashboard } from './components/HomeDashboard';
@@ -241,37 +244,168 @@ export default function App() {
 
   // Submit New Incident Report
   const handleReportSubmit = (newIncident: RoadIncident) => {
-    const updated = [newIncident, ...incidents];
+    const selectedOutlets = normalizeMediaHouseList(newIncident.syndicatedMediaOutlets);
+    const isMod = newIncident.verificationStatus === 'verified';
+    const mediaDispatches: MediaWireDelivery[] = selectedOutlets.map((outletName) => ({
+      outletName,
+      status: isMod ? 'delivered' : 'pending_admin',
+      queuedAt: 'Just now',
+      deliveredAt: isMod ? 'Just now' : undefined,
+      dispatchedBy: isMod ? 'Highway Safety Desk' : undefined,
+    }));
+
+    const enrichedIncident: RoadIncident = {
+      ...newIncident,
+      status: isMod ? 'verified' : 'unverified',
+      verificationStatus: isMod ? 'verified' : 'reported',
+      sentToAdministrator: true,
+      syndicatedMediaOutlets: selectedOutlets,
+      mediaDispatches,
+    };
+
+    const updated = [enrichedIncident, ...incidents];
     updateIncidents(updated);
 
-    // Also notify user in in-app notification center
+    const mediaText =
+      selectedOutlets.length > 0
+        ? ` and routed to selected media houses (${selectedOutlets.join(', ')})`
+        : '';
+
+    // Notify in-app notification center
     const newNotif: AppNotification = {
       id: `notif-${Date.now().toString(36)}`,
-      title: 'Report Submitted',
-      message: `Your report "${newIncident.title}" on ${newIncident.highway} has been added to RoadLink and submitted for verification.`,
+      title: 'Report Submitted to Administrator Desk',
+      message: `Report "${enrichedIncident.title}" on ${enrichedIncident.highway} is in the Moderator verification queue${mediaText}.`,
       type: 'report_status',
       timestamp: 'Just now',
       isRead: false,
-      linkTab: 'community',
+      linkTab: selectedOutlets.length > 0 ? 'moderator' : 'community',
     };
     const updatedNotifs = [newNotif, ...notifications];
     handleUpdateNotifications(updatedNotifs);
 
-    showToast('Hazard report submitted! Alert added to RoadLink network.');
+    showToast(
+      selectedOutlets.length > 0
+        ? `Submitted to Administrator Desk & wired to ${selectedOutlets.join(', ')}!`
+        : 'Hazard report submitted to Administrator verification queue!'
+    );
   };
 
-  // Moderator: Verify Incident
-  const handleModeratorVerify = (id: string, note?: string) => {
+  // Build updated media dispatches list when moderator verifies or relays to selected outlets
+  const buildDeliveredMediaDispatches = (
+    existingDispatches: MediaWireDelivery[] | undefined,
+    selectedOutlets: string[]
+  ): MediaWireDelivery[] => {
+    const normalized = normalizeMediaHouseList(selectedOutlets);
+    return normalized.map((outletName) => {
+      const prev = existingDispatches?.find(
+        (d) => normalizeMediaHouseName(d.outletName) === outletName
+      );
+      if (prev && (prev.status === 'acknowledged' || prev.status === 'published')) {
+        return { ...prev, outletName };
+      }
+      return {
+        outletName,
+        status: 'delivered',
+        queuedAt: prev?.queuedAt || 'Just now',
+        deliveredAt: 'Just now',
+        dispatchedBy: 'Highway Safety Administrator',
+      };
+    });
+  };
+
+  // Moderator: Verify Incident & Deliver News to Selected Media Houses
+  const handleModeratorVerify = (id: string, note?: string, selectedMediaOutlets?: string[]) => {
     const target = incidents.find((i) => i.id === id);
     if (!target) return;
+
+    const finalOutlets = normalizeMediaHouseList(
+      selectedMediaOutlets !== undefined ? selectedMediaOutlets : target.syndicatedMediaOutlets
+    );
+    const updatedDispatches = buildDeliveredMediaDispatches(target.mediaDispatches, finalOutlets);
 
     const updated = incidents.map((inc) =>
       inc.id === id
         ? {
             ...inc,
+            status: 'verified' as const,
             verificationStatus: 'verified' as const,
             verifiedBy: 'Highway Safety Desk Officer',
             moderationNotes: note || 'Verified via patrol report',
+            syndicatedMediaOutlets: finalOutlets,
+            mediaDispatches: updatedDispatches,
+            mediaDispatchedAt: finalOutlets.length > 0 ? 'Just now' : inc.mediaDispatchedAt,
+            mediaDispatchedBy: finalOutlets.length > 0 ? 'Highway Safety Administrator' : inc.mediaDispatchedBy,
+          }
+        : inc
+    );
+    updateIncidents(updated);
+
+    const mediaSummary =
+      finalOutlets.length > 0
+        ? ` · Delivered to media houses: ${finalOutlets.join(', ')}`
+        : '';
+
+    const newLog: ModeratorActionLog = {
+      id: `log-${Date.now().toString(36)}`,
+      incidentId: id,
+      incidentTitle: target.title,
+      action: 'verified',
+      moderatorName: 'Duty Marshal',
+      timestamp: 'Just now',
+      note: `${note || 'Verified via patrol report'}${mediaSummary}`,
+    };
+    const updatedLogs = [newLog, ...auditLogs];
+    setAuditLogs(updatedLogs);
+    saveStoredAuditLogs(updatedLogs);
+
+    if (finalOutlets.length > 0) {
+      const dispatchNotif: AppNotification = {
+        id: `notif-${Date.now().toString(36)}-media`,
+        title: `News Delivered to ${finalOutlets.join(', ')}`,
+        message: `Verified dispatch "${target.title}" (${target.highway}) has been delivered to ${finalOutlets.join(', ')} Press Wire Inboxes.`,
+        type: 'announcement',
+        timestamp: 'Just now',
+        isRead: false,
+        linkTab: 'publisher',
+      };
+      handleUpdateNotifications([dispatchNotif, ...notifications]);
+    }
+
+    if (selectedIncident && selectedIncident.id === id) {
+      setSelectedIncident({
+        ...selectedIncident,
+        status: 'verified',
+        verificationStatus: 'verified',
+        verifiedBy: 'Highway Safety Desk Officer',
+        syndicatedMediaOutlets: finalOutlets,
+        mediaDispatches: updatedDispatches,
+      });
+    }
+
+    showToast(
+      finalOutlets.length > 0
+        ? `Verified & delivered news to: ${finalOutlets.join(', ')}`
+        : 'Incident verified and promoted to live alert status.'
+    );
+  };
+
+  // Moderator: Dispatch / Sync Media Houses on an already verified incident
+  const handleModeratorDispatchMedia = (id: string, selectedMediaOutlets: string[]) => {
+    const target = incidents.find((i) => i.id === id);
+    if (!target) return;
+
+    const finalOutlets = normalizeMediaHouseList(selectedMediaOutlets);
+    const updatedDispatches = buildDeliveredMediaDispatches(target.mediaDispatches, finalOutlets);
+
+    const updated = incidents.map((inc) =>
+      inc.id === id
+        ? {
+            ...inc,
+            syndicatedMediaOutlets: finalOutlets,
+            mediaDispatches: updatedDispatches,
+            mediaDispatchedAt: finalOutlets.length > 0 ? 'Just now' : undefined,
+            mediaDispatchedBy: finalOutlets.length > 0 ? 'Highway Safety Administrator' : undefined,
           }
         : inc
     );
@@ -284,21 +418,107 @@ export default function App() {
       action: 'verified',
       moderatorName: 'Duty Marshal',
       timestamp: 'Just now',
-      note: note || 'Verified via patrol report',
+      note:
+        finalOutlets.length > 0
+          ? `Media wire delivered exclusively to: ${finalOutlets.join(', ')}`
+          : 'Cleared selected media house recipients',
     };
     const updatedLogs = [newLog, ...auditLogs];
     setAuditLogs(updatedLogs);
     saveStoredAuditLogs(updatedLogs);
 
-    if (selectedIncident && selectedIncident.id === id) {
-      setSelectedIncident({
-        ...selectedIncident,
-        verificationStatus: 'verified',
-        verifiedBy: 'Highway Safety Desk Officer',
-      });
+    if (finalOutlets.length > 0) {
+      const dispatchNotif: AppNotification = {
+        id: `notif-${Date.now().toString(36)}-relay`,
+        title: `Media Wire Updated: ${finalOutlets.join(', ')}`,
+        message: `"${target.title}" is now available in the Press Wire Inbox for: ${finalOutlets.join(', ')}.`,
+        type: 'announcement',
+        timestamp: 'Just now',
+        isRead: false,
+        linkTab: 'publisher',
+      };
+      handleUpdateNotifications([dispatchNotif, ...notifications]);
     }
 
-    showToast('Incident verified and promoted to live alert status.');
+    showToast(
+      finalOutlets.length > 0
+        ? `Dispatched news to: ${finalOutlets.join(', ')}`
+        : 'Media recipients updated.'
+    );
+  };
+
+  // Media House: Acknowledge receipt of wire dispatch
+  const handleAcknowledgeMediaDispatch = (incidentId: string, outletName: string) => {
+    const canonicalOutlet = normalizeMediaHouseName(outletName);
+    const updated = incidents.map((inc) => {
+      if (inc.id !== incidentId) return inc;
+      const existing = inc.mediaDispatches || [];
+      const hasEntry = existing.some(
+        (d) => normalizeMediaHouseName(d.outletName) === canonicalOutlet
+      );
+      const nextDispatches: MediaWireDelivery[] = hasEntry
+        ? existing.map((d) =>
+            normalizeMediaHouseName(d.outletName) === canonicalOutlet
+              ? { ...d, status: 'acknowledged', acknowledgedAt: 'Just now' }
+              : d
+          )
+        : [
+            ...existing,
+            {
+              outletName: canonicalOutlet,
+              status: 'acknowledged',
+              queuedAt: inc.timestamp || 'Recently',
+              deliveredAt: 'Just now',
+              acknowledgedAt: 'Just now',
+            },
+          ];
+
+      return { ...inc, mediaDispatches: nextDispatches };
+    });
+    updateIncidents(updated);
+  };
+
+  // Media House: Mark wire dispatch as published to the National Gazette
+  const handleMarkMediaDispatchPublished = (
+    incidentId: string,
+    outletName: string,
+    storyId: string
+  ) => {
+    const canonicalOutlet = normalizeMediaHouseName(outletName);
+    const updated = incidents.map((inc) => {
+      if (inc.id !== incidentId) return inc;
+      const existing = inc.mediaDispatches || [];
+      const hasEntry = existing.some(
+        (d) => normalizeMediaHouseName(d.outletName) === canonicalOutlet
+      );
+      const nextDispatches: MediaWireDelivery[] = hasEntry
+        ? existing.map((d) =>
+            normalizeMediaHouseName(d.outletName) === canonicalOutlet
+              ? {
+                  ...d,
+                  status: 'published',
+                  acknowledgedAt: d.acknowledgedAt || 'Just now',
+                  publishedStoryId: storyId,
+                  publishedAt: 'Just now',
+                }
+              : d
+          )
+        : [
+            ...existing,
+            {
+              outletName: canonicalOutlet,
+              status: 'published',
+              queuedAt: inc.timestamp || 'Recently',
+              deliveredAt: 'Just now',
+              acknowledgedAt: 'Just now',
+              publishedStoryId: storyId,
+              publishedAt: 'Just now',
+            },
+          ];
+
+      return { ...inc, mediaDispatches: nextDispatches };
+    });
+    updateIncidents(updated);
   };
 
   // Moderator: Resolve Incident
@@ -310,6 +530,7 @@ export default function App() {
       inc.id === id
         ? {
             ...inc,
+            status: 'resolved' as const,
             verificationStatus: 'resolved' as const,
             isStillOngoing: false,
             resolvedAt: 'Just now by Safety Desk',
@@ -334,6 +555,7 @@ export default function App() {
     if (selectedIncident && selectedIncident.id === id) {
       setSelectedIncident({
         ...selectedIncident,
+        status: 'resolved',
         verificationStatus: 'resolved',
         isStillOngoing: false,
         resolvedAt: 'Just now by Safety Desk',
@@ -431,9 +653,29 @@ export default function App() {
     setIsReportModalOpen(true);
   };
 
-  // Highway focus on map from route planner
+  // Highway focus on map from route planner or dashboard
   const handleSelectHighwayOnMap = (highwayCode: string) => {
-    setSelectedHighwayOnMap(highwayCode);
+    setSelectedHighwayOnMap('all');
+    const code = highwayCode.toUpperCase();
+    let pair: [string, string] | null = null;
+    if (code.includes('A6')) pair = ['Bulawayo', 'Gwanda'];
+    else if (code.includes('A5')) pair = ['Bulawayo', 'Harare'];
+    else if (code.includes('A8')) pair = ['Bulawayo', 'Victoria Falls'];
+    else if (code.includes('A7')) pair = ['Bulawayo', 'Plumtree'];
+    else if (code.includes('A4')) pair = ['Harare', 'Beitbridge'];
+    else if (code.includes('A3')) pair = ['Harare', 'Mutare'];
+    else if (code.includes('A9')) pair = ['Bulawayo', 'Masvingo'];
+    else if (code.includes('A1')) pair = ['Harare', 'Chirundu'];
+    else if (code.includes('A2')) pair = ['Harare', 'Nyamapanda'];
+
+    if (pair) {
+      const computed = computeDynamicRouteWithAlternatives(pair[0], pair[1], incidents);
+      if (computed) {
+        setActiveRouteForMap(computed);
+      }
+    } else {
+      setSelectedHighwayOnMap(highwayCode);
+    }
     setActiveTab('map');
   };
 
@@ -444,8 +686,11 @@ export default function App() {
     setActiveTab('map');
   };
 
-  const activeHazards = incidents.filter((i) => i.verificationStatus !== 'resolved');
-  const unverifiedCount = incidents.filter((i) => i.verificationStatus === 'reported' || i.verificationStatus === 'under_review').length;
+  const activeHazards = incidents.filter((i) => {
+    const eff = getEffectiveIncidentStatus(i);
+    return eff !== 'resolved' && eff !== 'dismissed';
+  });
+  const unverifiedCount = incidents.filter((i) => getEffectiveIncidentStatus(i) === 'pending').length;
   const unreadNotificationsCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -614,6 +859,7 @@ export default function App() {
             auditLogs={auditLogs}
             emergencyBanner={emergencyBanner}
             onVerifyIncident={handleModeratorVerify}
+            onDispatchMedia={handleModeratorDispatchMedia}
             onResolveIncident={handleModeratorResolve}
             onDismissIncident={handleModeratorDismiss}
             onChangeSeverity={handleModeratorChangeSeverity}
@@ -632,6 +878,8 @@ export default function App() {
             incidents={incidents}
             onNavigateTab={(tab) => setActiveTab(tab)}
             onOpenStoryDetail={() => setActiveTab('news')}
+            onAcknowledgeMediaDispatch={handleAcknowledgeMediaDispatch}
+            onMarkMediaDispatchPublished={handleMarkMediaDispatchPublished}
           />
         )}
       </main>

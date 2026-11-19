@@ -67,6 +67,19 @@ export interface IncidentComment {
   isHelpfulVoteCount?: number;
 }
 
+export type MediaWireStatus = 'pending_admin' | 'delivered' | 'acknowledged' | 'published';
+
+export interface MediaWireDelivery {
+  outletName: string;
+  status: MediaWireStatus;
+  queuedAt: string;
+  deliveredAt?: string;
+  dispatchedBy?: string;
+  acknowledgedAt?: string;
+  publishedStoryId?: string;
+  publishedAt?: string;
+}
+
 export interface RoadIncident {
   id: string;
   title: string;
@@ -104,6 +117,9 @@ export interface RoadIncident {
   comments?: IncidentComment[];
   isDemoData?: boolean;
   syndicatedMediaOutlets?: string[];
+  mediaDispatches?: MediaWireDelivery[];
+  mediaDispatchedAt?: string;
+  mediaDispatchedBy?: string;
   sentToAdministrator?: boolean;
 }
 
@@ -241,6 +257,27 @@ export interface RouteStep {
   icon?: 'straight' | 'turn-right' | 'turn-left' | 'toll' | 'checkpoint' | 'destination' | 'start';
 }
 
+export interface AlternativeRouteOption {
+  id: string;
+  label: string;
+  badgeText: string;
+  isPrimary?: boolean;
+  highwayCode: string;
+  distanceKm: number;
+  estMinutes: number;
+  delayMinutes: number;
+  tollCount: number;
+  tollFeeUsd: number;
+  tollFeeZiG: number;
+  tollPlazas: { name: string; lat: number; lng: number }[];
+  waypoints: [number, number][];
+  obstaclesOnRoute: RoadIncident[];
+  avoidedObstacles: RoadIncident[];
+  isRecommendedClear: boolean;
+  roadCondition: string;
+  steps: RouteStep[];
+}
+
 export interface RoutePreviewData {
   routeId: string;
   origin: string;
@@ -257,6 +294,7 @@ export interface RoutePreviewData {
   hazardsSummary: string;
   fastestRouteLabel?: string;
   steps: RouteStep[];
+  alternativeRoutes?: AlternativeRouteOption[];
 }
 
 export interface AppNotification {

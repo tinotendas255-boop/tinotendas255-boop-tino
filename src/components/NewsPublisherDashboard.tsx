@@ -11,6 +11,13 @@ import {
   getStoredPublisherProfile,
   saveStoredPublisherProfile,
 } from '../utils/storage';
+import {
+  CANONICAL_MEDIA_HOUSES,
+  doesPublisherMatchOutlet,
+  getEffectiveIncidentStatus,
+  isIncidentAddressedToMedia,
+  normalizeMediaHouseName,
+} from '../utils/mediaHouses';
 import highwayPressPhoto from '../assets/highway_press_photo.jpg';
 import smartHighwayHero from '../assets/bulawayo_smart_highway.jpg';
 import bulawayo3dMap from '../assets/bulawayo_3d_map.jpg';
@@ -44,6 +51,8 @@ import {
   LogOut,
   Building2,
   Check,
+  Inbox,
+  Award,
 } from 'lucide-react';
 
 interface NewsPublisherDashboardProps {
@@ -54,27 +63,15 @@ interface NewsPublisherDashboardProps {
   incidents: RoadIncident[];
   onNavigateTab: (tab: string) => void;
   onOpenStoryDetail?: (story: NewsStory) => void;
+  onAcknowledgeMediaDispatch?: (incidentId: string, outletName: string) => void;
+  onMarkMediaDispatchPublished?: (incidentId: string, outletName: string, storyId: string) => void;
 }
 
-// Preset Accredited Media Houses in Zimbabwe for 1-click test sign in
+// Preset Accredited Media Houses in Zimbabwe for 1-click sign in & testing
 const DEMO_PUBLISHERS: NewsPublisherProfile[] = [
   {
-    id: 'pub-chronicle-byo',
-    organizationName: 'The Chronicle Zimbabwe',
-    reporterName: 'Thabani Ndlovu',
-    pressCardNumber: 'ZMC-BYO-2026-441',
-    officialEmail: 't.ndlovu@chronicle.co.zw',
-    editorialBeat: 'Matabeleland Highways & Trans-Kalahari Corridors',
-    cityBureau: 'Bulawayo',
-    isZmcAccredited: true,
-    articlesPublishedCount: 18,
-    totalViews: 94200,
-    joinedDate: 'Jan 2026',
-    role: 'bureau_chief',
-  },
-  {
     id: 'pub-herald-hre',
-    organizationName: 'The Herald Transport Desk',
+    organizationName: 'The Herald',
     reporterName: 'Farai Mutasa',
     pressCardNumber: 'ZMC-HRE-2026-902',
     officialEmail: 'fmutasa@herald.co.zw',
@@ -88,7 +85,7 @@ const DEMO_PUBLISHERS: NewsPublisherProfile[] = [
   },
   {
     id: 'pub-zbc-wire',
-    organizationName: 'ZBC News Highway Wire',
+    organizationName: 'ZBC News',
     reporterName: 'Chipo Sibanda',
     pressCardNumber: 'ZMC-NAT-2026-118',
     officialEmail: 'sibandac@zbcnews.co.zw',
@@ -101,8 +98,36 @@ const DEMO_PUBLISHERS: NewsPublisherProfile[] = [
     role: 'correspondent',
   },
   {
+    id: 'pub-chronicle-byo',
+    organizationName: 'The Chronicle',
+    reporterName: 'Thabani Ndlovu',
+    pressCardNumber: 'ZMC-BYO-2026-441',
+    officialEmail: 't.ndlovu@chronicle.co.zw',
+    editorialBeat: 'Matabeleland Highways & Trans-Kalahari Corridors',
+    cityBureau: 'Bulawayo',
+    isZmcAccredited: true,
+    articlesPublishedCount: 18,
+    totalViews: 94200,
+    joinedDate: 'Jan 2026',
+    role: 'bureau_chief',
+  },
+  {
+    id: 'pub-starfm-hre',
+    organizationName: 'Star FM',
+    reporterName: 'Kudzai Chikomo',
+    pressCardNumber: 'ZMC-RAD-2026-205',
+    officialEmail: 'traffic@starfm.co.zw',
+    editorialBeat: 'Live Drive-Time Traffic & Highway Radio Wire',
+    cityBureau: 'Harare',
+    isZmcAccredited: true,
+    articlesPublishedCount: 15,
+    totalViews: 81400,
+    joinedDate: 'Jan 2026',
+    role: 'correspondent',
+  },
+  {
     id: 'pub-newsday-transit',
-    organizationName: 'NewsDay Zimbabwe Transit',
+    organizationName: 'NewsDay Zimbabwe',
     reporterName: 'Kelvin Moyo',
     pressCardNumber: 'ZMC-HRE-2026-319',
     officialEmail: 'kmoyo@newsday.co.zw',
@@ -113,6 +138,20 @@ const DEMO_PUBLISHERS: NewsPublisherProfile[] = [
     totalViews: 41800,
     joinedDate: 'March 2026',
     role: 'correspondent',
+  },
+  {
+    id: 'pub-zifm-news',
+    organizationName: 'ZiFM Stereo',
+    reporterName: 'Rumbidzai Nyoni',
+    pressCardNumber: 'ZMC-ZIF-2026-512',
+    officialEmail: 'newsdesk@zifmstereo.co.zw',
+    editorialBeat: 'Breaking Highway Bulletins & Urban Commuter Alerts',
+    cityBureau: 'Harare',
+    isZmcAccredited: true,
+    articlesPublishedCount: 11,
+    totalViews: 53900,
+    joinedDate: 'Feb 2026',
+    role: 'editor',
   },
 ];
 
@@ -176,6 +215,8 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
   incidents,
   onNavigateTab,
   onOpenStoryDetail,
+  onAcknowledgeMediaDispatch,
+  onMarkMediaDispatchPublished,
 }) => {
   // Authentication & Profile State
   const [publisher, setPublisher] = useState<NewsPublisherProfile | null>(() =>
@@ -200,13 +241,14 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
   const [role, setRole] = useState<'editor' | 'correspondent' | 'bureau_chief'>('correspondent');
   const [acceptedTerms, setAcceptedTerms] = useState(true);
 
-  // Active Dashboard view
-  const [activeView, setActiveView] = useState<'stories' | 'upload' | 'wire' | 'credentials'>(
-    'stories'
+  // Active Dashboard view (default to Received Wire Inbox when signed in)
+  const [activeView, setActiveView] = useState<'inbox' | 'stories' | 'upload' | 'wire' | 'credentials'>(
+    'inbox'
   );
 
   // Story Creator & Upload Studio State
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
+  const [adoptedIncidentId, setAdoptedIncidentId] = useState<string | null>(null);
   const [storyTitle, setStoryTitle] = useState('');
   const [storySummary, setStorySummary] = useState('');
   const [storyCategory, setStoryCategory] = useState<NewsStory['category']>('safety');
@@ -227,14 +269,11 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
     'Star FM',
   ]);
 
-  const MEDIA_SYNDICATION_PARTNERS = [
-    { name: 'The Herald', tag: 'Zimpapers National Daily', icon: '📰' },
-    { name: 'ZBC News', tag: 'Zimbabwe Broadcasting Corporation TV & Radio', icon: '📺' },
-    { name: 'The Chronicle', tag: 'Bulawayo & Matabeleland Regional Daily', icon: '🗞️' },
-    { name: 'Star FM', tag: 'National Commercial Radio Network', icon: '📻' },
-    { name: 'NewsDay Zimbabwe', tag: 'Alpha Media Holdings Daily', icon: '📄' },
-    { name: 'Zifm Stereo', tag: 'National News & Talk Radio', icon: '🎙️' },
-  ];
+  const MEDIA_SYNDICATION_PARTNERS = CANONICAL_MEDIA_HOUSES.map((h) => ({
+    name: h.canonicalName,
+    tag: h.tag,
+    icon: h.icon,
+  }));
 
   // Media & Image Upload State
   const [selectedPhotoPreset, setSelectedPhotoPreset] = useState<string>(highwayPressPhoto);
@@ -257,11 +296,24 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
     }, 3500);
   };
 
-  // Handle Quick Demo Sign-In
+  // Compute dispatches strictly addressed to the currently signed-in media house
+  const receivedDispatches = publisher
+    ? incidents.filter((inc) =>
+        isIncidentAddressedToMedia(inc, publisher.organizationName, publisher.officialEmail)
+      )
+    : [];
+
+  // Handle Quick Demo Sign-In / Media House Switch
   const handleQuickSignIn = (demoPub: NewsPublisherProfile) => {
     setPublisher(demoPub);
     saveStoredPublisherProfile(demoPub);
-    showToast(`Signed in as ${demoPub.reporterName} (${demoPub.organizationName})`);
+    const matchedCount = incidents.filter((inc) =>
+      isIncidentAddressedToMedia(inc, demoPub.organizationName, demoPub.officialEmail)
+    ).length;
+    setActiveView('inbox');
+    showToast(
+      `Signed in as ${demoPub.organizationName} (${matchedCount} wire dispatch${matchedCount === 1 ? '' : 'es'} received)`
+    );
   };
 
   // Handle Sign-In submit
@@ -357,23 +409,99 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
 
   // Pre-fill form from a live road incident report
   const handleAdoptIncidentToStory = (incident: RoadIncident) => {
+    setAdoptedIncidentId(incident.id);
     setActiveView('upload');
     setStoryTitle(`PRESS REPORT: ${incident.title} on ${incident.highway}`);
-    setStorySummary(`Verified traffic alert at ${incident.locationName}: ${incident.description}`);
+    setStorySummary(
+      `Corridor alert at ${incident.locationName} (Reported by ${incident.reporterName}): ${incident.description}`
+    );
     setSelectedHighway(incident.highway);
     setSelectedTown(incident.locationName);
     setSeverity(incident.severity);
+    setAlternativeRoute(incident.detourAdvice || '');
     setBodyParagraphs(
-      `BULAWAYO / NATIONAL ROAD WIRE — Motorists travelling along ${incident.highway} are advised to exercise heightened vigilance following confirmed reports at ${incident.locationName}.\n\nAccording to road telemetry and eyewitness accounts, ${incident.description}. Advisory: ${incident.detourAdvice || 'Exercise caution and maintain safe following distances'}.\n\nTraffic authorities advise drivers to monitor clearance operations.`
+      `${(publisher?.cityBureau || 'NATIONAL').toUpperCase()} ROAD WIRE — Motorists travelling along ${incident.highway} are advised to exercise heightened vigilance following reports at ${incident.locationName}.\n\nEyewitness Credit: ${incident.reporterName} (${incident.reporterRole.replace('_', ' ')}).\n\nAccording to corridor telemetry and field accounts, ${incident.description} Advisory: ${incident.detourAdvice || 'Exercise caution and maintain safe following distances'}.\n\nTraffic authorities and highway marshals continue monitoring clearance operations.`
     );
     setTagsInput(`${incident.highway}, ${incident.locationName}, Road Alert, RoadLink`);
     setIsBreaking(incident.severity === 'critical');
-    showToast(`Loaded details from incident "${incident.title}" into story studio`);
+    if (publisher) {
+      setSelectedSyndicateMedia([normalizeMediaHouseName(publisher.organizationName)]);
+    }
+    showToast(`Loaded wire dispatch "${incident.title}" into story studio`);
+  };
+
+  // 1-Click instant publish from a received wire dispatch
+  const handleInstantPublishFromWire = (incident: RoadIncident) => {
+    if (!publisher) return;
+    const storyId = `news-${Date.now().toString(36)}`;
+    const canonicalOrg = normalizeMediaHouseName(publisher.organizationName);
+    const effectiveStatus = getEffectiveIncidentStatus(incident);
+
+    const storyObject: NewsStory = {
+      id: storyId,
+      title: `${canonicalOrg} Bulletin: ${incident.title} (${incident.highway})`,
+      slug: `${canonicalOrg}-${incident.title}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      summary: `${incident.locationName}: ${incident.description} (Eyewitness credit: ${incident.reporterName})`,
+      content: [
+        `${publisher.cityBureau.toUpperCase()} BUREAU — ${canonicalOrg} has received and verified a RoadLink corridor dispatch concerning ${incident.locationName} along ${incident.highway}.`,
+        `Incident Report: ${incident.description}`,
+        `Eyewitness Attribution: Submitted by ${incident.reporterName} (${incident.reporterRole.replace('_', ' ')}) and ${effectiveStatus === 'verified' ? `verified by ${incident.verifiedBy || 'RoadLink Highway Safety Desk'}` : 'queued with RoadLink safety telemetry'}.`,
+        incident.detourAdvice
+          ? `Motorist Detour & Safety Guidance: ${incident.detourAdvice}`
+          : 'Motorists are urged to reduce speed and follow marshal signals on approach.',
+      ],
+      category:
+        incident.category === 'accident'
+          ? 'accidents'
+          : incident.category === 'roadwork'
+          ? 'roadworks'
+          : incident.category === 'congestion'
+          ? 'congestion'
+          : incident.category === 'closure'
+          ? 'closures'
+          : incident.category === 'flooding' || incident.category === 'weather_hazard'
+          ? 'weather'
+          : 'safety',
+      categoryLabel: incident.category === 'accident' ? 'Accident Bulletin' : 'Highway Safety Wire',
+      locationOrRoute: incident.locationName,
+      town: incident.town || publisher.cityBureau,
+      severity: incident.severity,
+      author: `${publisher.reporterName} (with eyewitness ${incident.reporterName})`,
+      source: canonicalOrg,
+      sourceUrl: `https://roadlink.co.zw/press/${publisher.id}`,
+      publishedAt: 'Just now',
+      lastUpdatedAt: 'Just now',
+      readTimeMinutes: 2,
+      imageUrl: highwayPressPhoto,
+      relatedHighway: incident.highway,
+      relatedIncidentId: incident.id,
+      alternativeRoute: incident.detourAdvice,
+      verificationStatus: effectiveStatus === 'verified' ? 'official' : 'verified',
+      tags: [incident.highway, incident.locationName, canonicalOrg, 'RoadLink Wire'],
+      syndicatedMediaOutlets: [canonicalOrg],
+      syndicationConfirmedAt: 'Just now (Published from Wire Inbox)',
+      comments: [],
+      likesCount: 1,
+    };
+
+    onPublishStory(storyObject);
+    if (onMarkMediaDispatchPublished) {
+      onMarkMediaDispatchPublished(incident.id, canonicalOrg, storyId);
+    }
+    const updatedPub: NewsPublisherProfile = {
+      ...publisher,
+      articlesPublishedCount: publisher.articlesPublishedCount + 1,
+      totalViews: publisher.totalViews + 180,
+    };
+    setPublisher(updatedPub);
+    saveStoredPublisherProfile(updatedPub);
+    showToast(`${canonicalOrg} published "${incident.title}" to the National Gazette!`);
   };
 
   // Edit existing story
   const handleStartEdit = (story: NewsStory) => {
     setEditingStoryId(story.id);
+    setAdoptedIncidentId(story.relatedIncidentId || null);
     setStoryTitle(story.title);
     setStorySummary(story.summary);
     setStoryCategory(story.category);
@@ -393,6 +521,7 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
   // Reset form
   const handleResetForm = () => {
     setEditingStoryId(null);
+    setAdoptedIncidentId(null);
     setStoryTitle('');
     setStorySummary('');
     setBodyParagraphs('');
@@ -440,9 +569,10 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
       .filter((t) => t.length > 0);
 
     const imageUrl = customImageBase64 || selectedPhotoPreset || highwayPressPhoto;
+    const newStoryId = editingStoryId || `news-${Date.now().toString(36)}`;
 
     const storyObject: NewsStory = {
-      id: editingStoryId || `news-${Date.now().toString(36)}`,
+      id: newStoryId,
       title: storyTitle.trim(),
       slug: storyTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
       summary: storySummary.trim(),
@@ -460,6 +590,7 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
       readTimeMinutes: Math.max(1, Math.ceil(finalContent.join(' ').split(' ').length / 180)),
       imageUrl,
       relatedHighway: selectedHighway,
+      relatedIncidentId: adoptedIncidentId || undefined,
       alternativeRoute: alternativeRoute.trim() || undefined,
       verificationStatus: publisher.isZmcAccredited ? 'official' : 'verified',
       tags: tags.length > 0 ? tags : ['RoadLink', 'Highway Press'],
@@ -474,6 +605,13 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
       showToast(`Updated "${storyObject.title}" on the live wire!`);
     } else {
       onPublishStory(storyObject);
+      if (adoptedIncidentId && onMarkMediaDispatchPublished) {
+        onMarkMediaDispatchPublished(
+          adoptedIncidentId,
+          normalizeMediaHouseName(publisher.organizationName),
+          newStoryId
+        );
+      }
       showToast(`Published "${storyObject.title}" directly to the National Road Wire!`);
 
       // Update publisher stats
@@ -841,58 +979,66 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
 
           {/* Right Column: 1-Click Fast Test Accounts */}
           <div className="lg:col-span-5 space-y-5">
-            <div className="bg-amber-50/70 border-2 border-amber-200 rounded-2xl p-6 space-y-4">
+            <div className="bg-[#FFFFFF] border-2 border-[#2563EB]/30 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-700" />
-                <h3 className="text-sm font-bold text-amber-950 uppercase tracking-tight">
-                  Instant Test Sign-In (Accredited Outlets)
+                <Sparkles className="w-5 h-5 text-[#F97316]" />
+                <h3 className="text-sm font-bold text-[#111827] uppercase tracking-tight">
+                  Accredited Media Houses (1-Click Sign In)
                 </h3>
               </div>
-              <p className="text-xs text-amber-900/80 leading-relaxed">
-                Click any of these accredited media houses to instantly test publishing, photo uploading, and broadcasting to the road feed:
+              <p className="text-xs text-[#64748B] leading-relaxed">
+                Select any media house to open its newsroom inbox and view reports specifically routed to that organisation:
               </p>
 
-              <div className="space-y-2.5">
-                {DEMO_PUBLISHERS.map((pub) => (
-                  <button
-                    key={pub.id}
-                    onClick={() => handleQuickSignIn(pub)}
-                    className="w-full text-left p-3.5 bg-white hover:bg-amber-100/50 border border-amber-200 rounded-xl transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs hover:shadow-sm group"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="font-serif font-black text-slate-900 text-sm group-hover:text-amber-900 transition-colors">
-                        {pub.organizationName}
+              <div className="space-y-2">
+                {DEMO_PUBLISHERS.map((pub) => {
+                  const inboxCount = incidents.filter((inc) =>
+                    isIncidentAddressedToMedia(inc, pub.organizationName, pub.officialEmail)
+                  ).length;
+
+                  return (
+                    <button
+                      key={pub.id}
+                      onClick={() => handleQuickSignIn(pub)}
+                      className="w-full text-left p-3 bg-[#F1F5F9]/70 hover:bg-[#2563EB]/10 border border-[#E2E8F0] hover:border-[#2563EB]/40 rounded-xl transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                    >
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="font-serif font-black text-[#111827] text-sm group-hover:text-[#2563EB] transition-colors flex items-center gap-2">
+                          <span className="truncate">{pub.organizationName}</span>
+                          {inboxCount > 0 && (
+                            <span className="px-1.5 py-0.2 bg-[#F97316] text-white text-[10px] font-mono rounded-full font-bold">
+                              {inboxCount} received
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-[#64748B] truncate">
+                          {pub.reporterName} · <span className="font-semibold text-[#111827]">{pub.cityBureau} Bureau</span>
+                        </div>
                       </div>
-                      <div className="text-[11px] text-slate-500">
-                        {pub.reporterName} · <span className="font-semibold text-slate-700">{pub.cityBureau} Bureau</span>
+                      <div className="flex-shrink-0 px-2.5 py-1.5 bg-[#2563EB] text-white font-bold text-xs rounded-lg group-hover:bg-[#1D4ED8] transition-colors flex items-center gap-1">
+                        <span>Open Desk</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
                       </div>
-                      <div className="text-[10px] font-mono text-amber-700">
-                        {pub.editorialBeat}
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0 px-2.5 py-1.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg group-hover:bg-amber-600 group-hover:text-white transition-colors flex items-center gap-1">
-                      <span>Sign In</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3 text-xs text-slate-600">
-              <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-emerald-600" />
-                How RoadLink Newsroom Works
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 space-y-3 text-xs text-[#64748B]">
+              <h4 className="font-bold text-[#111827] flex items-center gap-1.5">
+                <Shield className="w-4 h-4 text-[#16A34A]" />
+                How RoadLink Selective Media Routing Works
               </h4>
               <ul className="space-y-2 list-disc pl-4 text-[11px] leading-relaxed">
                 <li>
-                  <strong>Direct Live Wire Broadcast</strong>: Uploaded articles appear immediately in the national road wire and home page news banner.
+                  <strong>Exclusive Selected Delivery</strong>: Only the media houses picked by the reporter or Moderator Desk receive each incident in their Newsroom Wire Inbox.
                 </li>
                 <li>
-                  <strong>Photojournalism Assets</strong>: Upload high-resolution on-scene photos or choose from verified highway imagery.
+                  <strong>Administrator Verification</strong>: Pending eyewitness reports show verification status and upgrade to Verified Official Dispatch once cleared by the Moderator Desk.
                 </li>
                 <li>
-                  <strong>Audience Reach</strong>: Dispatches are pushed to long-haul drivers, cross-border coaches, and daily commuters along A6, A5, and A4 corridors.
+                  <strong>Reporter Attribution</strong>: Publishing from the Wire Inbox automatically credits the citizen or driver who filed the road alert.
                 </li>
               </ul>
             </div>
@@ -900,16 +1046,90 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
         </div>
       ) : (
         /* WHEN SIGNED IN: FULL PUBLISHER DASHBOARD & UPLOAD STUDIO */
-        <div className="space-y-6">
+        <div className="space-y-5">
+          {/* Quick Media House Switcher Bar */}
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-2xl p-3 sm:p-4 shadow-xs space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-bold text-[#111827] flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-[#2563EB]" />
+                <span>Switch Media House Inbox (Verify Selective Receipt):</span>
+              </span>
+              <span className="text-[11px] text-[#64748B]">
+                Only reports addressed to the active organisation appear in its Wire Inbox
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {DEMO_PUBLISHERS.map((pub) => {
+                const isActive = doesPublisherMatchOutlet(
+                  publisher.organizationName,
+                  pub.organizationName,
+                  publisher.officialEmail
+                );
+                const count = incidents.filter((inc) =>
+                  isIncidentAddressedToMedia(inc, pub.organizationName, pub.officialEmail)
+                ).length;
+
+                return (
+                  <button
+                    key={pub.id}
+                    type="button"
+                    onClick={() => handleQuickSignIn(pub)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                      isActive
+                        ? 'bg-[#0B1220] text-white border-[#0B1220] shadow-xs'
+                        : 'bg-[#F1F5F9] hover:bg-slate-200 text-[#111827] border-[#E2E8F0]'
+                    }`}
+                  >
+                    <span>{pub.organizationName}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                        count > 0
+                          ? 'bg-[#F97316] text-white'
+                          : isActive
+                          ? 'bg-[#1E293B] text-[#94A3B8]'
+                          : 'bg-white text-[#64748B]'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Dashboard Navigation Tabs */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setActiveView('inbox')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  activeView === 'inbox'
+                    ? 'bg-[#2563EB] text-white shadow-sm'
+                    : 'bg-white hover:bg-[#F1F5F9] text-[#111827] border border-[#E2E8F0]'
+                }`}
+              >
+                <Inbox className="w-4 h-4" />
+                <span>Received News Inbox</span>
+                <span
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                    activeView === 'inbox'
+                      ? 'bg-[#0B1220] text-white'
+                      : receivedDispatches.length > 0
+                      ? 'bg-[#F97316] text-white'
+                      : 'bg-[#F1F5F9] text-[#64748B]'
+                  }`}
+                >
+                  {receivedDispatches.length}
+                </span>
+              </button>
+
               <button
                 onClick={() => setActiveView('stories')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                   activeView === 'stories'
-                    ? 'bg-slate-950 text-white shadow-sm'
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    ? 'bg-[#0B1220] text-white shadow-sm'
+                    : 'bg-white hover:bg-[#F1F5F9] text-[#111827] border border-[#E2E8F0]'
                 }`}
               >
                 <BookOpen className="w-4 h-4" />
@@ -923,32 +1143,223 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                 }}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                   activeView === 'upload'
-                    ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    ? 'bg-[#F97316] text-white shadow-sm'
+                    : 'bg-white hover:bg-[#F1F5F9] text-[#111827] border border-[#E2E8F0]'
                 }`}
               >
                 <PenTool className="w-4 h-4" />
                 <span>Upload Story Studio</span>
-                {editingStoryId && <span className="px-1.5 py-0.2 bg-slate-900 text-white rounded text-[10px]">Editing</span>}
+                {editingStoryId && <span className="px-1.5 py-0.2 bg-[#0B1220] text-white rounded text-[10px]">Editing</span>}
               </button>
 
               <button
                 onClick={() => setActiveView('wire')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${
                   activeView === 'wire'
-                    ? 'bg-slate-950 text-white shadow-sm'
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    ? 'bg-[#0B1220] text-white shadow-sm'
+                    : 'bg-white hover:bg-[#F1F5F9] text-[#111827] border border-[#E2E8F0]'
                 }`}
               >
-                <Radio className="w-4 h-4 text-emerald-500" />
-                <span>Live Road Intelligence Wire ({incidents.length})</span>
+                <Radio className="w-4 h-4 text-[#16A34A]" />
+                <span>All Corridor Telemetry ({incidents.length})</span>
               </button>
             </div>
 
-            <div className="text-xs text-slate-500 font-medium">
-              Signed in as: <strong className="text-slate-800">{publisher.organizationName}</strong>
+            <div className="text-xs text-[#64748B] font-medium">
+              Active Newsroom: <strong className="text-[#111827]">{publisher.organizationName}</strong>
             </div>
           </div>
+
+          {/* VIEW 0: RECEIVED NEWS WIRE INBOX (EXCLUSIVELY FOR THIS MEDIA HOUSE) */}
+          {activeView === 'inbox' && (
+            <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E8F0] pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-[#111827] flex items-center gap-2">
+                    <Inbox className="w-5 h-5 text-[#2563EB]" />
+                    <span>Incoming News Dispatches for {publisher.organizationName}</span>
+                  </h2>
+                  <p className="text-xs text-[#64748B] mt-0.5">
+                    Reports below were explicitly directed to <strong>{publisher.organizationName}</strong> by road reporters or the Highway Safety Moderator Desk.
+                  </p>
+                </div>
+                <span className="px-3 py-1.5 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] text-xs font-mono font-bold text-[#111827] self-start sm:self-auto">
+                  {receivedDispatches.length} Addressed to You
+                </span>
+              </div>
+
+              {receivedDispatches.length === 0 ? (
+                <div className="py-12 px-4 text-center space-y-3 bg-[#F1F5F9]/50 rounded-xl border border-dashed border-[#E2E8F0]">
+                  <Inbox className="w-10 h-10 text-[#64748B] mx-auto opacity-60" />
+                  <h3 className="text-sm font-bold text-[#111827]">
+                    No dispatches currently addressed to {publisher.organizationName}
+                  </h3>
+                  <p className="text-xs text-[#64748B] max-w-md mx-auto leading-relaxed">
+                    When a motorist submits a hazard report and selects <strong>{publisher.organizationName}</strong> (or when the Moderator Desk routes a report here), the news dispatch will arrive directly in this inbox.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('wire')}
+                    className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-bold cursor-pointer"
+                  >
+                    Browse All Public Corridor Leads
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {receivedDispatches.map((incident) => {
+                    const effectiveStatus = getEffectiveIncidentStatus(incident);
+                    const canonicalOrg = normalizeMediaHouseName(publisher.organizationName);
+                    const myDelivery = incident.mediaDispatches?.find((d) =>
+                      doesPublisherMatchOutlet(publisher.organizationName, d.outletName, publisher.officialEmail)
+                    );
+                    const otherRecipients = (incident.syndicatedMediaOutlets || []).filter(
+                      (o) => !doesPublisherMatchOutlet(publisher.organizationName, o, publisher.officialEmail)
+                    );
+
+                    return (
+                      <div
+                        key={incident.id}
+                        className="p-4 sm:p-5 rounded-xl border-2 border-[#2563EB]/25 bg-[#F1F5F9]/50 space-y-3"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap text-[11px]">
+                            <span
+                              className={`px-2 py-0.5 rounded font-bold uppercase flex items-center gap-1 ${
+                                effectiveStatus === 'verified'
+                                  ? 'bg-[#16A34A]/15 text-[#16A34A] border border-[#16A34A]/30'
+                                  : effectiveStatus === 'resolved'
+                                  ? 'bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]'
+                                  : 'bg-[#F97316]/15 text-[#F97316] border border-[#F97316]/30'
+                              }`}
+                            >
+                              {effectiveStatus === 'verified' ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>Verified & Dispatched by Admin</span>
+                                </>
+                              ) : effectiveStatus === 'resolved' ? (
+                                <span>Resolved / Cleared</span>
+                              ) : (
+                                <>
+                                  <Clock className="w-3 h-3" />
+                                  <span>Eyewitness Wire · Pending Admin Verification</span>
+                                </>
+                              )}
+                            </span>
+
+                            <span
+                              className={`px-2 py-0.5 rounded font-mono font-bold ${
+                                myDelivery?.status === 'published'
+                                  ? 'bg-[#16A34A] text-white'
+                                  : myDelivery?.status === 'acknowledged'
+                                  ? 'bg-[#2563EB] text-white'
+                                  : myDelivery?.status === 'delivered'
+                                  ? 'bg-[#2563EB]/15 text-[#2563EB]'
+                                  : 'bg-white text-[#64748B] border border-[#E2E8F0]'
+                              }`}
+                            >
+                              {myDelivery?.status === 'published'
+                                ? '✓ Published by Your Desk'
+                                : myDelivery?.status === 'acknowledged'
+                                ? '✓ Received & Acknowledged'
+                                : myDelivery?.status === 'delivered'
+                                ? `Delivered to ${canonicalOrg}`
+                                : `Queued for ${canonicalOrg}`}
+                            </span>
+
+                            <span className="text-[#64748B] font-mono">{incident.timestamp}</span>
+                          </div>
+
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              incident.severity === 'critical'
+                                ? 'bg-red-100 text-red-800'
+                                : incident.severity === 'warning'
+                                ? 'bg-[#F97316]/15 text-[#F97316]'
+                                : 'bg-[#2563EB]/15 text-[#2563EB]'
+                            }`}
+                          >
+                            {incident.severity}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="text-xs font-semibold text-[#2563EB]">
+                            {incident.highway} · {incident.locationName}
+                          </div>
+                          <h3 className="text-base font-serif font-black text-[#111827]">
+                            {incident.title}
+                          </h3>
+                          <p className="text-xs text-[#64748B] leading-relaxed">
+                            {incident.description}
+                          </p>
+                          {incident.detourAdvice && (
+                            <p className="text-xs text-[#111827] bg-[#FFFFFF] border border-[#E2E8F0] rounded-lg px-3 py-2 mt-1">
+                              <strong className="text-[#F97316]">Detour / Safety Note:</strong> {incident.detourAdvice}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Reporter Attribution & Recipient Traceability */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E2E8F0] text-[11px]">
+                          <div className="flex items-center gap-2 flex-wrap text-[#111827]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#FFFFFF] border border-[#E2E8F0] font-semibold">
+                              <Award className="w-3 h-3 text-[#F97316]" />
+                              Reporter Credit: {incident.reporterName} ({incident.reporterRole.replace('_', ' ')})
+                            </span>
+                            {otherRecipients.length > 0 && (
+                              <span className="text-[#64748B]">
+                                Co-recipients: <strong className="text-[#111827]">{otherRecipients.join(', ')}</strong>
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {onAcknowledgeMediaDispatch &&
+                              myDelivery?.status !== 'acknowledged' &&
+                              myDelivery?.status !== 'published' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onAcknowledgeMediaDispatch(incident.id, canonicalOrg);
+                                    showToast(`${canonicalOrg} acknowledged receipt of "${incident.title}"`);
+                                  }}
+                                  className="px-3 py-1.5 bg-[#FFFFFF] hover:bg-slate-100 text-[#111827] border border-[#E2E8F0] rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1"
+                                >
+                                  <Check className="w-3.5 h-3.5 text-[#16A34A]" />
+                                  <span>Acknowledge Receipt</span>
+                                </button>
+                              )}
+
+                            <button
+                              type="button"
+                              onClick={() => handleAdoptIncidentToStory(incident)}
+                              className="px-3 py-1.5 bg-[#0B1220] hover:bg-[#1E293B] text-white rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1"
+                            >
+                              <PenTool className="w-3.5 h-3.5 text-[#F97316]" />
+                              <span>Edit & Publish Story</span>
+                            </button>
+
+                            {myDelivery?.status !== 'published' && (
+                              <button
+                                type="button"
+                                onClick={() => handleInstantPublishFromWire(incident)}
+                                className="px-3 py-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1 shadow-xs"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                                <span>1-Click Publish to Gazette</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* VIEW 1: UPLOAD STUDIO */}
           {activeView === 'upload' && (
@@ -1359,18 +1770,18 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                       onClick={() => setStoryFilter('my_pub')}
                       className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                         storyFilter === 'my_pub'
-                          ? 'bg-white text-slate-900 shadow-sm font-bold'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-white text-[#111827] shadow-sm font-bold'
+                          : 'text-[#64748B] hover:text-[#111827]'
                       }`}
                     >
-                      Our Bureau ({newsStories.filter(s => s.source?.toLowerCase().includes(publisher.organizationName.toLowerCase())).length})
+                      Our Bureau ({newsStories.filter(s => doesPublisherMatchOutlet(publisher.organizationName, s.source || '', publisher.officialEmail)).length})
                     </button>
                     <button
                       onClick={() => setStoryFilter('all')}
                       className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                         storyFilter === 'all'
-                          ? 'bg-white text-slate-900 shadow-sm font-bold'
-                          : 'text-slate-600 hover:text-slate-900'
+                          ? 'bg-white text-[#111827] shadow-sm font-bold'
+                          : 'text-[#64748B] hover:text-[#111827]'
                       }`}
                     >
                       All National Dispatches ({newsStories.length})
@@ -1380,7 +1791,7 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                       className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                         storyFilter === 'breaking'
                           ? 'bg-white text-red-700 shadow-sm font-bold'
-                          : 'text-slate-600 hover:text-slate-900'
+                          : 'text-[#64748B] hover:text-[#111827]'
                       }`}
                     >
                       Breaking Only
@@ -1394,14 +1805,14 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search articles, bylines, routes..."
-                    className="px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 w-56"
+                    className="px-3.5 py-1.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-xl text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB] w-48 sm:w-56"
                   />
                   <button
                     onClick={() => {
                       handleResetForm();
                       setActiveView('upload');
                     }}
-                    className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Upload Article</span>
@@ -1412,10 +1823,10 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
               {/* Stories Grid */}
               <div className="space-y-3">
                 {filteredStories.length === 0 ? (
-                  <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
+                  <div className="bg-white border border-[#E2E8F0] rounded-2xl p-12 text-center space-y-3">
                     <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-                    <h3 className="text-base font-bold text-slate-900">No Dispatches Found</h3>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    <h3 className="text-base font-bold text-[#111827]">No Dispatches Found</h3>
+                    <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                       No stories match the active filter. Click "Upload Article" to publish your first dispatch.
                     </p>
                     <button
@@ -1423,14 +1834,18 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
                         handleResetForm();
                         setActiveView('upload');
                       }}
-                      className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 bg-[#0B1220] text-white rounded-xl text-xs font-bold cursor-pointer"
                     >
                       + Upload New Dispatch
                     </button>
                   </div>
                 ) : (
                   filteredStories.map((story) => {
-                    const isOwnStory = story.source?.toLowerCase().includes(publisher.organizationName.toLowerCase());
+                    const isOwnStory = doesPublisherMatchOutlet(
+                      publisher.organizationName,
+                      story.source || '',
+                      publisher.officialEmail
+                    );
 
                     return (
                       <div
@@ -1551,56 +1966,82 @@ export const NewsPublisherDashboard: React.FC<NewsPublisherDashboardProps> = ({
             </div>
           )}
 
-          {/* VIEW 3: LIVE ROAD INTELLIGENCE WIRE (Source Leads for Reporters) */}
+          {/* VIEW 3: LIVE ROAD INTELLIGENCE WIRE (All Corridor Telemetry) */}
           {activeView === 'wire' && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Radio className="w-5 h-5 text-emerald-600" />
-                    Live Highway Reports & Telemetry Feed (Reporting Leads)
+                  <h2 className="text-lg font-bold text-[#111827] flex items-center gap-2">
+                    <Radio className="w-5 h-5 text-[#16A34A]" />
+                    All Zimbabwe Corridor Telemetry & Reporting Leads
                   </h2>
-                  <p className="text-xs text-slate-500">
-                    Active hazards and traffic alerts submitted by drivers. Click "Draft Story from Incident" to prefill an official press release.
+                  <p className="text-xs text-[#64748B]">
+                    General highway hazards across Zimbabwe. Items directly addressed to {publisher.organizationName} also appear in your Received News Inbox.
                   </p>
                 </div>
-                <div className="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
-                  {incidents.length} Active Feeds
+                <div className="text-xs font-mono font-bold text-[#111827] bg-[#F1F5F9] px-3 py-1.5 rounded-lg border border-[#E2E8F0]">
+                  {incidents.length} Total Feeds
                 </div>
               </div>
 
               <div className="space-y-3">
-                {incidents.map((incident) => (
-                  <div
-                    key={incident.id}
-                    className="p-4 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
-                        <span className="font-bold text-emerald-800">{incident.highway}</span>
-                        <span>·</span>
-                        <span>{incident.locationName}</span>
-                        <span>·</span>
-                        <span className="capitalize">{incident.timestamp}</span>
-                        <span className={`px-1.5 py-0.2 rounded font-bold uppercase text-[9px] ${
-                          incident.severity === 'critical' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {incident.severity}
-                        </span>
-                      </div>
-                      <h4 className="font-bold text-slate-900 text-sm">{incident.title}</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed">{incident.description}</p>
-                    </div>
+                {incidents.map((incident) => {
+                  const addressedToMe = isIncidentAddressedToMedia(
+                    incident,
+                    publisher.organizationName,
+                    publisher.officialEmail
+                  );
 
-                    <button
-                      onClick={() => handleAdoptIncidentToStory(incident)}
-                      className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition-colors cursor-pointer flex-shrink-0 flex items-center gap-1.5 shadow-xs"
+                  return (
+                    <div
+                      key={incident.id}
+                      className={`p-4 border rounded-xl transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                        addressedToMe
+                          ? 'border-[#2563EB]/40 bg-[#2563EB]/5'
+                          : 'border-[#E2E8F0] hover:border-slate-300'
+                      }`}
                     >
-                      <PenTool className="w-3.5 h-3.5" />
-                      <span>Draft Press Story</span>
-                    </button>
-                  </div>
-                ))}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap text-[11px] font-mono text-[#64748B]">
+                          {addressedToMe && (
+                            <span className="px-1.5 py-0.2 rounded bg-[#2563EB] text-white font-bold text-[9px] uppercase">
+                              Addressed to {publisher.organizationName}
+                            </span>
+                          )}
+                          <span className="font-bold text-[#16A34A]">{incident.highway}</span>
+                          <span>·</span>
+                          <span>{incident.locationName}</span>
+                          <span>·</span>
+                          <span className="capitalize">{incident.timestamp}</span>
+                          <span
+                            className={`px-1.5 py-0.2 rounded font-bold uppercase text-[9px] ${
+                              incident.severity === 'critical'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-[#F97316]/15 text-[#F97316]'
+                            }`}
+                          >
+                            {incident.severity}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-[#111827] text-sm">{incident.title}</h4>
+                        <p className="text-xs text-[#64748B] leading-relaxed">{incident.description}</p>
+                        {incident.syndicatedMediaOutlets && incident.syndicatedMediaOutlets.length > 0 && (
+                          <div className="text-[10px] text-[#64748B]">
+                            Selected media houses: <strong className="text-[#111827]">{incident.syndicatedMediaOutlets.join(', ')}</strong>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleAdoptIncidentToStory(incident)}
+                        className="px-3.5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer flex-shrink-0 flex items-center gap-1.5 shadow-xs"
+                      >
+                        <PenTool className="w-3.5 h-3.5" />
+                        <span>Draft Press Story</span>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

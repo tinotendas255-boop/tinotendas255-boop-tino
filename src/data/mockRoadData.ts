@@ -468,7 +468,22 @@ export const INITIAL_INCIDENTS: RoadIncident[] = [
     isApproximateLocation: true,
     approximateAreaLabel: 'General Macheke Area',
     severity: 'advisory',
+    status: 'unverified',
     verificationStatus: 'under_review',
+    sentToAdministrator: true,
+    syndicatedMediaOutlets: ['The Herald', 'ZBC News'],
+    mediaDispatches: [
+      {
+        outletName: 'The Herald',
+        status: 'pending_admin',
+        queuedAt: '10 mins ago',
+      },
+      {
+        outletName: 'ZBC News',
+        status: 'pending_admin',
+        queuedAt: '10 mins ago',
+      },
+    ],
     timestamp: '10 mins ago',
     dateObserved: '2026-10-17',
     timeObserved: '08:40',

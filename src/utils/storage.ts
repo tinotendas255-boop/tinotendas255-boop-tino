@@ -1,5 +1,6 @@
 import { RoadIncident, ModeratorActionLog, UserProfile, AppNotification, WeatherTravelAlert, NewsStory, NewsPublisherProfile } from '../types';
 import { INITIAL_INCIDENTS, DEFAULT_USER_PROFILE, INITIAL_NOTIFICATIONS, INITIAL_WEATHER_ALERTS, NEWS_STORIES } from '../data/mockRoadData';
+import { getEffectiveIncidentStatus, normalizeMediaHouseList } from './mediaHouses';
 
 const STORAGE_KEYS = {
   INCIDENTS: 'roadlink_incidents_v2',
@@ -13,17 +14,57 @@ const STORAGE_KEYS = {
   PUBLISHER_PROFILE: 'roadlink_publisher_profile_v2',
 };
 
+const normalizeIncidentRecord = (inc: RoadIncident): RoadIncident => {
+  const effective = getEffectiveIncidentStatus(inc);
+  const syncedStatus: RoadIncident['status'] =
+    effective === 'verified'
+      ? 'verified'
+      : effective === 'resolved'
+      ? 'resolved'
+      : effective === 'dismissed'
+      ? 'dismissed'
+      : 'unverified';
+  const normalizedOutlets = normalizeMediaHouseList(inc.syndicatedMediaOutlets);
+  const existingDispatches = inc.mediaDispatches || [];
+  const syncedDispatches =
+    normalizedOutlets.length > 0
+      ? normalizedOutlets.map((outlet) => {
+          const existing = existingDispatches.find(
+            (d) => d.outletName.toLowerCase() === outlet.toLowerCase()
+          );
+          if (existing) {
+            return { ...existing, outletName: outlet };
+          }
+          return {
+            outletName: outlet,
+            status: (effective === 'verified' ? 'delivered' : 'pending_admin') as 'delivered' | 'pending_admin',
+            queuedAt: inc.timestamp || 'Recently',
+            deliveredAt: effective === 'verified' ? inc.timestamp || 'Recently' : undefined,
+          };
+        })
+      : existingDispatches;
+
+  return {
+    ...inc,
+    status: syncedStatus,
+    syndicatedMediaOutlets: normalizedOutlets.length > 0 ? normalizedOutlets : inc.syndicatedMediaOutlets,
+    mediaDispatches: syncedDispatches.length > 0 ? syncedDispatches : inc.mediaDispatches,
+  };
+};
+
 export const getStoredIncidents = (): RoadIncident[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.INCIDENTS);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(INITIAL_INCIDENTS));
-      return INITIAL_INCIDENTS;
+      const normalized = INITIAL_INCIDENTS.map(normalizeIncidentRecord);
+      localStorage.setItem(STORAGE_KEYS.INCIDENTS, JSON.stringify(normalized));
+      return normalized;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw) as RoadIncident[];
+    return Array.isArray(parsed) ? parsed.map(normalizeIncidentRecord) : INITIAL_INCIDENTS.map(normalizeIncidentRecord);
   } catch (err) {
     console.error('Failed to load incidents from storage:', err);
-    return INITIAL_INCIDENTS;
+    return INITIAL_INCIDENTS.map(normalizeIncidentRecord);
   }
 };
 

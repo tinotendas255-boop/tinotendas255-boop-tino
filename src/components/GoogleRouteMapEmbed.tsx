@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { RoutePreviewData, RoadIncident } from '../types';
+import { getEffectiveIncidentStatus } from '../utils/mediaHouses';
 import {
   MapPin,
   Navigation,
@@ -43,7 +44,7 @@ export const GoogleRouteMapEmbed: React.FC<GoogleRouteMapEmbedProps> = ({
   // Filter hazards along this route corridor
   const corridorHazards = incidents.filter(
     (inc) =>
-      inc.status !== 'resolved' &&
+      getEffectiveIncidentStatus(inc) !== 'resolved' &&
       (inc.highway.toLowerCase().includes(route.highwayCode.toLowerCase()) ||
         inc.locationName.toLowerCase().includes(route.destination.toLowerCase()) ||
         inc.locationName.toLowerCase().includes(route.origin.toLowerCase()))

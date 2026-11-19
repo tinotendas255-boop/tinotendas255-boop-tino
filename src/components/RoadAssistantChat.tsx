@@ -126,7 +126,7 @@ export const RoadAssistantChat: React.FC<RoadAssistantChatProps> = ({
       if (res.ok) {
         const data = await res.json();
         if (data && data.reply) {
-          const routePreview = data.routePreview || detectRoutePreviewFromQuery(query);
+          const routePreview = data.routePreview || detectRoutePreviewFromQuery(query, incidents, userProfile.baseTown);
           const assistantMsg: ChatMessage = {
             id: `bot-${Date.now()}`,
             sender: 'assistant',
@@ -154,7 +154,7 @@ export const RoadAssistantChat: React.FC<RoadAssistantChatProps> = ({
         weatherAlerts,
       });
 
-      const routePreview = answer.routePreview || detectRoutePreviewFromQuery(query);
+      const routePreview = answer.routePreview || detectRoutePreviewFromQuery(query, incidents, userProfile.baseTown);
 
       const assistantMsg: ChatMessage = {
         id: `bot-${Date.now()}`,

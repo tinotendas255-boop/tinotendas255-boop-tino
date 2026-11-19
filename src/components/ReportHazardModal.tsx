@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { RoadIncident, IncidentSeverity, IncidentCategory, ZimbabweHighway, ZimbabweTown, UserRole } from '../types';
+import { RoadIncident, IncidentSeverity, IncidentCategory, ZimbabweHighway, ZimbabweTown, UserRole, MediaWireDelivery } from '../types';
+import { CANONICAL_MEDIA_HOUSES, normalizeMediaHouseList } from '../utils/mediaHouses';
 import { AlertTriangle, MapPin, Navigation, Camera, X, CheckCircle, ShieldAlert, ShieldCheck, Send, Car, HardHat, Clock, Calendar } from 'lucide-react';
 
 interface ReportHazardModalProps {
@@ -83,17 +84,14 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
   const [selectedOutlets, setSelectedOutlets] = useState<string[]>([
     'The Herald',
     'ZBC News',
-    'The Chronicle',
-    'Star FM',
   ]);
 
-  const AVAILABLE_MEDIA_OUTLETS = [
-    { id: 'herald', name: 'The Herald', tag: 'National Press' },
-    { id: 'zbc', name: 'ZBC News', tag: 'National Broadcaster' },
-    { id: 'chronicle', name: 'The Chronicle', tag: 'Bulawayo & Southern Bureau' },
-    { id: 'starfm', name: 'Star FM Traffic Desk', tag: 'Radio Dispatch' },
-    { id: 'newsday', name: 'NewsDay Zimbabwe', tag: 'National Daily' },
-  ];
+  const AVAILABLE_MEDIA_OUTLETS = CANONICAL_MEDIA_HOUSES.map((house) => ({
+    id: house.id,
+    name: house.canonicalName,
+    tag: house.tag,
+    icon: house.icon,
+  }));
 
   React.useEffect(() => {
     if (initialCoords) {
@@ -149,6 +147,16 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
       return;
     }
 
+    const activeOutlets = syndicateToMedia ? normalizeMediaHouseList(selectedOutlets) : [];
+    const isModeratorSubmit = currentUserRole === 'moderator';
+    const mediaDispatches: MediaWireDelivery[] = activeOutlets.map((outletName) => ({
+      outletName,
+      status: isModeratorSubmit ? 'delivered' : 'pending_admin',
+      queuedAt: 'Just now',
+      deliveredAt: isModeratorSubmit ? 'Just now' : undefined,
+      dispatchedBy: isModeratorSubmit ? 'Highway Safety Desk' : undefined,
+    }));
+
     const newIncident: RoadIncident = {
       id: `inc-${Date.now().toString(36)}`,
       title: title.trim(),
@@ -160,9 +168,13 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
       isApproximateLocation,
       approximateAreaLabel: isApproximateLocation ? `General ${town} area` : undefined,
       severity,
-      verificationStatus: currentUserRole === 'moderator' ? 'verified' : 'reported',
+      status: isModeratorSubmit ? 'verified' : 'unverified',
+      verificationStatus: isModeratorSubmit ? 'verified' : 'reported',
       sentToAdministrator: true,
-      syndicatedMediaOutlets: syndicateToMedia ? selectedOutlets : [],
+      syndicatedMediaOutlets: activeOutlets,
+      mediaDispatches,
+      mediaDispatchedAt: isModeratorSubmit && activeOutlets.length > 0 ? 'Just now' : undefined,
+      mediaDispatchedBy: isModeratorSubmit && activeOutlets.length > 0 ? 'Highway Safety Desk' : undefined,
       timestamp: 'Just now',
       dateObserved,
       timeObserved,
@@ -175,7 +187,7 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
       helpfulCount: 1,
       direction,
       detourAdvice: detourAdvice.trim() || undefined,
-      verifiedBy: currentUserRole === 'moderator' ? 'Highway Safety Desk' : undefined,
+      verifiedBy: isModeratorSubmit ? 'Highway Safety Desk' : undefined,
     };
 
     onSubmit(newIncident);
@@ -493,37 +505,70 @@ export const ReportHazardModal: React.FC<ReportHazardModalProps> = ({
             </div>
 
             <p className="text-[11px] text-[#64748B] leading-relaxed">
-              Recognise your eyewitness report across Zimbabwe’s mainstream news and radio stations. Accredited newsrooms receive this report instantly with your reporter attribution.
+              Only the media organisations you select below will receive this road dispatch in their accredited newsroom inbox with your reporter recognition.
             </p>
 
             {syndicateToMedia && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1">
-                {AVAILABLE_MEDIA_OUTLETS.map((outlet) => {
-                  const isChecked = selectedOutlets.includes(outlet.name);
-                  return (
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-[#111827]">
+                    Selected recipients: <span className="text-[#2563EB] font-bold">{selectedOutlets.length}</span> of {AVAILABLE_MEDIA_OUTLETS.length}
+                  </span>
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      key={outlet.id}
-                      onClick={() => toggleOutlet(outlet.name)}
-                      className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors cursor-pointer ${
-                        isChecked
-                          ? 'bg-[#2563EB]/10 border-[#2563EB]/40 text-[#111827]'
-                          : 'bg-[#F1F5F9] border-[#E2E8F0] text-[#64748B] hover:bg-slate-100'
-                      }`}
+                      onClick={() => setSelectedOutlets(AVAILABLE_MEDIA_OUTLETS.map((o) => o.name))}
+                      className="text-[#2563EB] hover:underline font-semibold cursor-pointer"
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">{isChecked ? '✓' : '○'}</span>
-                        <div>
-                          <div className="font-bold text-[11px] text-[#111827]">{outlet.name}</div>
-                          <div className="text-[9px] text-[#64748B]">{outlet.tag}</div>
-                        </div>
-                      </div>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white text-[#2563EB] border border-[#E2E8F0] font-semibold">
-                        RECOGNISED
-                      </span>
+                      Select All
                     </button>
-                  );
-                })}
+                    <span className="text-[#E2E8F0]">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOutlets([])}
+                      className="text-[#64748B] hover:text-[#111827] hover:underline font-semibold cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {AVAILABLE_MEDIA_OUTLETS.map((outlet) => {
+                    const isChecked = selectedOutlets.includes(outlet.name);
+                    return (
+                      <button
+                        type="button"
+                        key={outlet.id}
+                        onClick={() => toggleOutlet(outlet.name)}
+                        className={`p-2 rounded-lg border text-left flex items-center justify-between transition-colors cursor-pointer ${
+                          isChecked
+                            ? 'bg-[#2563EB]/10 border-[#2563EB]/40 text-[#111827]'
+                            : 'bg-[#F1F5F9] border-[#E2E8F0] text-[#64748B] hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xs flex-shrink-0">{isChecked ? '✓' : '○'}</span>
+                          <div className="min-w-0">
+                            <div className="font-bold text-[11px] text-[#111827] truncate">
+                              {outlet.icon} {outlet.name}
+                            </div>
+                            <div className="text-[9px] text-[#64748B] truncate">{outlet.tag}</div>
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[9px] font-mono px-1.5 py-0.5 rounded border font-semibold flex-shrink-0 ${
+                            isChecked
+                              ? 'bg-[#16A34A]/10 text-[#16A34A] border-[#16A34A]/30'
+                              : 'bg-white text-[#64748B] border-[#E2E8F0]'
+                          }`}
+                        >
+                          {isChecked ? 'SELECTED' : 'ADD'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

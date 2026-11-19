@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { RoadIncident, UserRole } from '../types';
+import { getEffectiveIncidentStatus } from '../utils/mediaHouses';
 import { AlertTriangle, Filter, Search, ThumbsUp, ThumbsDown, MapPin, CheckCircle2, Clock, Shield, ArrowUpRight } from 'lucide-react';
 
 interface CommunityReportsViewProps {
@@ -22,7 +23,12 @@ export const CommunityReportsView: React.FC<CommunityReportsViewProps> = ({
   const [highwayFilter, setHighwayFilter] = useState<string>('all');
 
   const filtered = incidents.filter((item) => {
-    if (statusFilter !== 'all' && item.status !== statusFilter) return false;
+    const effStatus = getEffectiveIncidentStatus(item);
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'unverified' && effStatus !== 'pending') return false;
+      if (statusFilter === 'verified' && effStatus !== 'verified') return false;
+      if (statusFilter === 'resolved' && effStatus !== 'resolved') return false;
+    }
     if (highwayFilter !== 'all' && !item.highway.toLowerCase().includes(highwayFilter.toLowerCase())) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -156,7 +162,7 @@ export const CommunityReportsView: React.FC<CommunityReportsViewProps> = ({
                 <div className="flex items-center gap-3 text-[11px] text-[#64748B]">
                   <span>Reported by: <span className="font-medium text-[#111827]">{item.reporterName}</span> ({item.reporterRole})</span>
                   <span>·</span>
-                  <span>{item.status === 'verified' ? '✓ Verified by Safety Desk' : item.status === 'resolved' ? '✓ Cleared' : '⏳ Pending review'}</span>
+                  <span>{getEffectiveIncidentStatus(item) === 'verified' ? '✓ Verified by Safety Desk' : getEffectiveIncidentStatus(item) === 'resolved' ? '✓ Cleared' : '⏳ Pending review'}</span>
                 </div>
               </div>
 
