@@ -364,3 +364,87 @@ export interface NewsPublisherProfile {
   joinedDate: string;
   role: 'editor' | 'correspondent' | 'bureau_chief';
 }
+
+export interface SocialStory {
+  id: string;
+  authorName: string;
+  authorHandle: string;
+  avatarInitials: string;
+  avatarUrl?: string;
+  avatarColor?: string;
+  imageUrl: string;
+  caption: string;
+  location: string;
+  highway?: string;
+  timestamp: string;
+  isViewed?: boolean;
+}
+
+export interface SocialComment {
+  id: string;
+  authorName: string;
+  authorHandle: string;
+  avatarUrl?: string;
+  authorVerified?: boolean;
+  text: string;
+  timestamp: string;
+}
+
+export interface SocialPost {
+  id: string;
+  authorName: string;
+  authorHandle: string;
+  authorVerified?: boolean;
+  authorRoleLabel?: string;
+  avatarInitials: string;
+  avatarUrl?: string;
+  avatarBg?: string;
+  timestamp: string;
+  location?: string;
+  highway?: string;
+  feeling?: string;
+  content: string;
+  hashtags: string[];
+  imageUrl?: string;
+  hasEmbeddedMap?: boolean;
+  linkedIncidentId?: string;
+  likesCount: number;
+  userLiked?: boolean;
+  repostsCount: number;
+  userReposted?: boolean;
+  sharesCount: number;
+  comments: SocialComment[];
+}
+
+export interface SocialCommunity {
+  id: string;
+  name: string;
+  category: string;
+  membersLabel: string;
+  description: string;
+  isJoined: boolean;
+  iconType: 'drivers' | 'mechanics' | 'freight' | 'commuters';
+}
+
+export interface DirectMessageItem {
+  id: string;
+  sender: 'me' | 'peer';
+  text: string;
+  timestamp: string;
+}
+
+export interface DirectMessageThread {
+  id: string;
+  peerName: string;
+  peerHandle: string;
+  peerRole: string;
+  peerLocation: string;
+  avatarInitials: string;
+  avatarUrl?: string;
+  isOnline: boolean;
+  unreadCount: number;
+  lastMessage: string;
+  lastTimestamp: string;
+  messages: DirectMessageItem[];
+}
+

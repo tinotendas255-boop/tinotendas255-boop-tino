@@ -6,7 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   RoadIncident,
-  UserRole,
   IncidentSeverity,
   ModeratorActionLog,
   UserProfile,
@@ -16,6 +15,10 @@ import {
   RoutePreviewData,
   StoryComment,
   MediaWireDelivery,
+  SocialPost,
+  SocialStory,
+  SocialCommunity,
+  DirectMessageThread,
 } from './types';
 import {
   getStoredIncidents,
@@ -33,18 +36,30 @@ import {
   getStoredWeatherAlerts,
   getStoredNewsStories,
   saveStoredNewsStories,
+  getStoredSocialPosts,
+  saveStoredSocialPosts,
+  getStoredSocialStories,
+  saveStoredSocialStories,
+  getStoredCommunities,
+  saveStoredCommunities,
+  getStoredDmThreads,
+  saveStoredDmThreads,
 } from './utils/storage';
-import { NEWS_STORIES } from './data/mockRoadData';
+import { INITIAL_TRENDING_TOPICS, CURRENT_USER_AVATAR_IMG } from './data/socialData';
 import { computeDynamicRouteWithAlternatives } from './utils/routeEngine';
 import { getEffectiveIncidentStatus, normalizeMediaHouseList, normalizeMediaHouseName } from './utils/mediaHouses';
 import { Header } from './components/Header';
 import { MobileBottomNav } from './components/MobileBottomNav';
-import { HomeDashboard } from './components/HomeDashboard';
+import { SocialShellSidebar } from './components/SocialShellSidebar';
+import { SocialRightRail } from './components/SocialRightRail';
+import { SocialLandingFeed } from './components/SocialLandingFeed';
+import { SocialMessagesView } from './components/SocialMessagesView';
+import { SocialCommunitiesView } from './components/SocialCommunitiesView';
+import { EmergencySosModal, RoadLinkFeatureModal } from './components/EmergencySosModal';
 import { RoadMap } from './components/RoadMap';
 import { RoutePlanner } from './components/RoutePlanner';
 import { NewsFeed } from './components/NewsFeed';
 import { NewsPublisherDashboard } from './components/NewsPublisherDashboard';
-import { CommunityReportsView } from './components/CommunityReportsView';
 import { TransportOperators } from './components/TransportOperators';
 import { ModeratorPortal } from './components/ModeratorPortal';
 import { ProfileView } from './components/ProfileView';
@@ -58,11 +73,11 @@ import { Footer } from './components/Footer';
 import { CheckCircle2, Bot } from 'lucide-react';
 
 export default function App() {
-  // Navigation & Role State (Mobile-first defaults to 'home')
+  // Navigation & Role State
   const [activeTab, setActiveTab] = useState<string>('home');
   const [userProfile, setUserProfile] = useState<UserProfile>(getStoredUserProfile());
 
-  // Core Data State (Persisted)
+  // Core Road & News Data State (Persisted)
   const [incidents, setIncidents] = useState<RoadIncident[]>([]);
   const [newsStories, setNewsStories] = useState<NewsStory[]>(() => getStoredNewsStories());
   const [bookmarkedNewsIds, setBookmarkedNewsIds] = useState<string[]>([]);
@@ -71,6 +86,15 @@ export default function App() {
   const [weatherAlerts, setWeatherAlerts] = useState<WeatherTravelAlert[]>([]);
   const [emergencyBanner, setEmergencyBanner] = useState<string | null>(null);
 
+  // Social Feed, Stories, Communities & Messages State (Persisted)
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>(() => getStoredSocialPosts());
+  const [socialStories, setSocialStories] = useState<SocialStory[]>(() => getStoredSocialStories());
+  const [communities, setCommunities] = useState<SocialCommunity[]>(() => getStoredCommunities());
+  const [dmThreads, setDmThreads] = useState<DirectMessageThread[]>(() => getStoredDmThreads());
+  const [selectedDmThreadId, setSelectedDmThreadId] = useState<string>('dm-rescue');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
+
   // Modals & Active Selections
   const [selectedIncident, setSelectedIncident] = useState<RoadIncident | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
@@ -78,6 +102,9 @@ export default function App() {
   const [isIntegrationsModalOpen, setIsIntegrationsModalOpen] = useState<boolean>(false);
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState<boolean>(false);
   const [isDriverLoginModalOpen, setIsDriverLoginModalOpen] = useState<boolean>(false);
+  const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState<boolean>(false);
+  const [featureModalMode, setFeatureModalMode] = useState<'secure' | 'premium' | null>(null);
+  const [isPremiumActive, setIsPremiumActive] = useState<boolean>(false);
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState<boolean>(false);
   const [aiDrawerInitialQuery, setAiDrawerInitialQuery] = useState<string>('');
   const [selectedHighwayOnMap, setSelectedHighwayOnMap] = useState<string>('all');
@@ -103,12 +130,197 @@ export default function App() {
     setWeatherAlerts(getStoredWeatherAlerts());
     setEmergencyBanner(getEmergencyBanner());
     setUserProfile(getStoredUserProfile());
+    setSocialPosts(getStoredSocialPosts());
+    setSocialStories(getStoredSocialStories());
+    setCommunities(getStoredCommunities());
+    setDmThreads(getStoredDmThreads());
   }, []);
 
   // Save incidents
   const updateIncidents = (newIncidents: RoadIncident[]) => {
     setIncidents(newIncidents);
     saveStoredIncidents(newIncidents);
+  };
+
+  // Social Post Handlers
+  const handleCreateSocialPost = (
+    draft: Omit<SocialPost, 'id' | 'timestamp' | 'likesCount' | 'repostsCount' | 'sharesCount' | 'comments'>
+  ) => {
+    const created: SocialPost = {
+      ...draft,
+      id: `post-${Date.now().toString(36)}`,
+      timestamp: 'Just now',
+      likesCount: 1,
+      userLiked: true,
+      repostsCount: 0,
+      userReposted: false,
+      sharesCount: 0,
+      comments: [],
+    };
+    const updated = [created, ...socialPosts];
+    setSocialPosts(updated);
+    saveStoredSocialPosts(updated);
+    showToast('Post published to RoadLink feed!');
+  };
+
+  const handleTogglePostLike = (postId: string) => {
+    const updated = socialPosts.map((p) => {
+      if (p.id !== postId) return p;
+      const nextLiked = !p.userLiked;
+      return {
+        ...p,
+        userLiked: nextLiked,
+        likesCount: Math.max(0, p.likesCount + (nextLiked ? 1 : -1)),
+      };
+    });
+    setSocialPosts(updated);
+    saveStoredSocialPosts(updated);
+  };
+
+  const handleTogglePostRepost = (postId: string) => {
+    const updated = socialPosts.map((p) => {
+      if (p.id !== postId) return p;
+      const nextRepost = !p.userReposted;
+      return {
+        ...p,
+        userReposted: nextRepost,
+        repostsCount: Math.max(0, p.repostsCount + (nextRepost ? 1 : -1)),
+        sharesCount: Math.max(0, p.sharesCount + (nextRepost ? 1 : -1)),
+      };
+    });
+    setSocialPosts(updated);
+    saveStoredSocialPosts(updated);
+    showToast('Shared update with your Zimbabwe road network.');
+  };
+
+  const handleAddSocialComment = (postId: string, text: string) => {
+    const updated = socialPosts.map((p) => {
+      if (p.id !== postId) return p;
+      return {
+        ...p,
+        comments: [
+          ...p.comments,
+          {
+            id: `sc-${Date.now().toString(36)}`,
+            authorName: userProfile.name || 'Tinotenda Sibanda',
+            authorHandle: `@${(userProfile.name || 'tinotenda').toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+            avatarUrl: CURRENT_USER_AVATAR_IMG,
+            authorVerified: userProfile.isVerifiedDriver,
+            text,
+            timestamp: 'Just now',
+          },
+        ],
+      };
+    });
+    setSocialPosts(updated);
+    saveStoredSocialPosts(updated);
+    showToast('Comment added.');
+  };
+
+  const handleSendPostToDm = (post: SocialPost) => {
+    const summaryText = `Shared post from ${post.authorName}: "${post.content.slice(0, 110)}${
+      post.content.length > 110 ? '...' : ''
+    }"`;
+    const targetId = selectedDmThreadId || dmThreads[0]?.id || 'dm-rescue';
+    handleSendDmMessage(targetId, summaryText);
+    setSelectedDmThreadId(targetId);
+    setActiveTab('messages');
+    showToast('Post forwarded to Direct Messages.');
+  };
+
+  // Stories Handlers
+  const handleCreateStory = (storyDraft: Omit<SocialStory, 'id' | 'timestamp' | 'isViewed'>) => {
+    const created: SocialStory = {
+      ...storyDraft,
+      id: `story-${Date.now().toString(36)}`,
+      timestamp: 'Just now',
+      isViewed: false,
+    };
+    const updated = [created, ...socialStories];
+    setSocialStories(updated);
+    saveStoredSocialStories(updated);
+    showToast('Story shared for 24 hours!');
+  };
+
+  const handleMarkStoryViewed = (storyId: string) => {
+    const updated = socialStories.map((s) => (s.id === storyId ? { ...s, isViewed: true } : s));
+    setSocialStories(updated);
+    saveStoredSocialStories(updated);
+  };
+
+  // Communities Toggle
+  const handleToggleJoinCommunity = (communityId: string) => {
+    const updated = communities.map((c) =>
+      c.id === communityId ? { ...c, isJoined: !c.isJoined } : c
+    );
+    setCommunities(updated);
+    saveStoredCommunities(updated);
+    const target = updated.find((c) => c.id === communityId);
+    if (target) {
+      showToast(target.isJoined ? `Joined ${target.name}` : `Left ${target.name}`);
+    }
+  };
+
+  // Direct Messaging Handlers
+  const handleSelectDmThread = (threadId: string) => {
+    setSelectedDmThreadId(threadId);
+    const updated = dmThreads.map((t) =>
+      t.id === threadId ? { ...t, unreadCount: 0 } : t
+    );
+    setDmThreads(updated);
+    saveStoredDmThreads(updated);
+  };
+
+  const handleSendDmMessage = (threadId: string, text: string) => {
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const updated = dmThreads.map((t) => {
+      if (t.id !== threadId) return t;
+      return {
+        ...t,
+        unreadCount: 0,
+        lastMessage: text,
+        lastTimestamp: 'Just now',
+        messages: [
+          ...t.messages,
+          {
+            id: `dm-msg-${Date.now().toString(36)}`,
+            sender: 'me' as const,
+            text,
+            timestamp: nowTime,
+          },
+        ],
+      };
+    });
+    setDmThreads(updated);
+    saveStoredDmThreads(updated);
+  };
+
+  // Emergency SOS Dispatch Handler
+  const handleDispatchSosAlert = (serviceType: string, notes: string) => {
+    const sosIncident: RoadIncident = {
+      id: `inc-sos-${Date.now().toString(36)}`,
+      title: `SOS Assistance Requested: ${serviceType}`,
+      category: 'breakdown',
+      highway: 'A6 (Bulawayo - Beitbridge)',
+      town: userProfile.baseTown || 'Bulawayo',
+      locationName: `${userProfile.baseTown || 'Bulawayo'} Corridor SOS`,
+      coordinates: [-20.165, 28.59],
+      severity: 'critical',
+      status: 'unverified',
+      verificationStatus: 'reported',
+      timestamp: 'Just now',
+      isStillOngoing: true,
+      description: notes,
+      reporterRole: userProfile.role,
+      reporterName: userProfile.name || 'RoadLink Motorist',
+      confirmationsCount: 1,
+      refutedCount: 0,
+      helpfulCount: 0,
+      sentToAdministrator: true,
+    };
+    updateIncidents([sosIncident, ...incidents]);
+    handleSendDmMessage('dm-rescue', `SOS (${serviceType}): ${notes}`);
+    showToast(`Emergency SOS sent to ${serviceType} & Moderator Desk!`);
   };
 
   // News Publisher actions
@@ -242,7 +454,7 @@ export default function App() {
     showToast('Your update has been shared with motorists.');
   };
 
-  // Submit New Incident Report
+  // Submit New Incident Report (Routes to Admin + Selected Media + Social Feed)
   const handleReportSubmit = (newIncident: RoadIncident) => {
     const selectedOutlets = normalizeMediaHouseList(newIncident.syndicatedMediaOutlets);
     const isMod = newIncident.verificationStatus === 'verified';
@@ -266,12 +478,46 @@ export default function App() {
     const updated = [enrichedIncident, ...incidents];
     updateIncidents(updated);
 
+    // Mirror report into Social Feed so everyday users can see & comment immediately
+    const reporterInitials = (enrichedIncident.reporterName || 'RL')
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+    const mirroredPost: SocialPost = {
+      id: `post-inc-${enrichedIncident.id}`,
+      authorName: enrichedIncident.reporterName || userProfile.name,
+      authorHandle: `@${(enrichedIncident.reporterName || 'motorist').toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+      authorVerified: enrichedIncident.reporterRole === 'moderator' || enrichedIncident.reporterRole === 'verified_driver',
+      authorRoleLabel: selectedOutlets.length > 0 ? `Sent to ${selectedOutlets.join(', ')}` : 'Live Road Alert',
+      avatarInitials: reporterInitials,
+      avatarUrl: CURRENT_USER_AVATAR_IMG,
+      avatarBg: '#F97316',
+      timestamp: 'Just now',
+      location: `${enrichedIncident.locationName} · ${enrichedIncident.highway}`,
+      highway: enrichedIncident.highway,
+      content: `${enrichedIncident.title}\n${enrichedIncident.description}${
+        selectedOutlets.length > 0 ? `\nPress wire queued: ${selectedOutlets.join(', ')}` : ''
+      }`,
+      hashtags: ['#RoadLink', '#StaySafeZW', `#${enrichedIncident.highway.split(' ')[0]}`],
+      linkedIncidentId: enrichedIncident.id,
+      likesCount: 1,
+      userLiked: false,
+      repostsCount: 0,
+      userReposted: false,
+      sharesCount: 0,
+      comments: [],
+    };
+    const nextPosts = [mirroredPost, ...socialPosts];
+    setSocialPosts(nextPosts);
+    saveStoredSocialPosts(nextPosts);
+
     const mediaText =
       selectedOutlets.length > 0
         ? ` and routed to selected media houses (${selectedOutlets.join(', ')})`
         : '';
 
-    // Notify in-app notification center
     const newNotif: AppNotification = {
       id: `notif-${Date.now().toString(36)}`,
       title: 'Report Submitted to Administrator Desk',
@@ -279,7 +525,7 @@ export default function App() {
       type: 'report_status',
       timestamp: 'Just now',
       isRead: false,
-      linkTab: selectedOutlets.length > 0 ? 'moderator' : 'community',
+      linkTab: selectedOutlets.length > 0 ? 'moderator' : 'communities',
     };
     const updatedNotifs = [newNotif, ...notifications];
     handleUpdateNotifications(updatedNotifs);
@@ -291,7 +537,6 @@ export default function App() {
     );
   };
 
-  // Build updated media dispatches list when moderator verifies or relays to selected outlets
   const buildDeliveredMediaDispatches = (
     existingDispatches: MediaWireDelivery[] | undefined,
     selectedOutlets: string[]
@@ -679,7 +924,7 @@ export default function App() {
     setActiveTab('map');
   };
 
-  // Active route navigation on map (Google Maps style)
+  // Active route navigation on map
   const handleSelectRouteOnMap = (route: RoutePreviewData) => {
     setActiveRouteForMap(route);
     setSelectedHighwayOnMap(route.highwayCode);
@@ -692,28 +937,33 @@ export default function App() {
   });
   const unverifiedCount = incidents.filter((i) => getEffectiveIncidentStatus(i) === 'pending').length;
   const unreadNotificationsCount = notifications.filter((n) => !n.isRead).length;
+  const unreadMessagesCount = dmThreads.reduce((acc, t) => acc + t.unreadCount, 0);
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] text-[#111827] flex flex-col font-sans pb-16 md:pb-0">
+    <div className="min-h-screen bg-[#070B14] text-[#F8FAFC] flex flex-col font-sans pb-16 lg:pb-0">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-20 md:bottom-6 right-6 z-[3000] bg-[#0B1220] text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 border border-[#E2E8F0]/20 animate-fade-in">
+        <div className="fixed bottom-20 lg:bottom-6 right-6 z-[3500] bg-[#0F172A] text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 border border-[#3B82F6]/40">
           <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
           <span>{toastMessage.text}</span>
         </div>
       )}
 
-      {/* Header & Main Nav */}
+      {/* Top Social Bar */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        userName={userProfile.name}
         currentUserRole={userProfile.role}
         setCurrentUserRole={(role) => handleUpdateProfile({ ...userProfile, role })}
         currentDriverType={userProfile.driverType || 'commuter'}
         onOpenDriverLoginModal={() => setIsDriverLoginModalOpen(true)}
         unverifiedCount={unverifiedCount}
         unreadNotificationsCount={unreadNotificationsCount}
+        unreadMessagesCount={unreadMessagesCount}
         activeHazardsCount={activeHazards.length}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
         onOpenReportModal={() => {
           setReportModalCoords(null);
           setIsReportModalOpen(true);
@@ -723,242 +973,321 @@ export default function App() {
         emergencyBanner={emergencyBanner}
       />
 
-      {/* Main View Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-4 pb-24 md:py-6">
-        {/* TAB 0: HOME DASHBOARD */}
-        {activeTab === 'home' && (
-          <HomeDashboard
-            userProfile={userProfile}
-            incidents={incidents}
-            newsStories={newsStories}
-            weatherAlerts={weatherAlerts}
-            onNavigateTab={(tab) => setActiveTab(tab)}
-            onOpenReportModal={() => {
-              setReportModalCoords(null);
-              setIsReportModalOpen(true);
-            }}
-            onSelectIncident={(inc) => setSelectedIncident(inc)}
-            onSelectHighwayOnMap={handleSelectHighwayOnMap}
-            onOpenNewsStory={() => setActiveTab('news')}
-            onOpenIntegrations={() => setIsIntegrationsModalOpen(true)}
-            onOpenDriverLoginModal={() => setIsDriverLoginModalOpen(true)}
-            onUpdateProfile={handleUpdateProfile}
-          />
-        )}
+      {/* Main 3-Column Social Shell */}
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-3 sm:px-5 pt-4 pb-24 lg:py-5 flex items-start gap-5">
+        {/* Left Navigation Sidebar */}
+        <SocialShellSidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          unreadNotificationsCount={unreadNotificationsCount}
+          unreadMessagesCount={unreadMessagesCount}
+          unverifiedCount={unverifiedCount}
+          onOpenNotificationsModal={() => setIsNotificationsModalOpen(true)}
+          onOpenSecureModal={() => setFeatureModalMode('secure')}
+          onOpenPremiumModal={() => setFeatureModalMode('premium')}
+        />
 
-        {/* TAB 1: EXPLORE MAP */}
-        {activeTab === 'map' && (
-          <div className="space-y-6">
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Explore Zimbabwe Highway Map & Incidents
-                </h1>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Real-time geographic markers for roadworks, dualisation contraflows, ZINARA queues, and community alerts.
-                </p>
+        {/* Center Main Stage */}
+        <div className="flex-1 min-w-0">
+          {/* TAB 0: SOCIAL HOME FEED (Matches Screenshot) */}
+          {activeTab === 'home' && (
+            <SocialLandingFeed
+              userProfile={userProfile}
+              posts={socialPosts}
+              stories={socialStories}
+              incidents={incidents}
+              searchQuery={searchQuery}
+              activeHashtag={activeHashtag}
+              onSelectHashtag={setActiveHashtag}
+              onCreatePost={handleCreateSocialPost}
+              onToggleLike={handleTogglePostLike}
+              onToggleRepost={handleTogglePostRepost}
+              onAddComment={handleAddSocialComment}
+              onSendPostToDm={handleSendPostToDm}
+              onCreateStory={handleCreateStory}
+              onMarkStoryViewed={handleMarkStoryViewed}
+              onOpenReportModal={() => {
+                setReportModalCoords(null);
+                setIsReportModalOpen(true);
+              }}
+              onOpenFullMap={() => setActiveTab('map')}
+              onSelectIncident={(inc) => setSelectedIncident(inc)}
+              onNavigateTab={(tab) => setActiveTab(tab)}
+            />
+          )}
+
+          {/* TAB 1: EXPLORE FULL INTERACTIVE MAP & ROUTING */}
+          {activeTab === 'map' && (
+            <div className="space-y-4">
+              <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-4 sm:p-5 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                    Explore Zimbabwe Highway Map & Live Obstacles
+                  </h1>
+                  <p className="text-xs text-[#94A3B8] mt-0.5">
+                    Real-time roadblocks, accidents, dynamic obstacle-avoidance routes, and ZINARA corridors.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 text-xs shrink-0">
+                  <span className="text-[#94A3B8] tabular-nums">
+                    <strong className="text-white">{incidents.length}</strong> corridor markers
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReportModalCoords(null);
+                      setIsReportModalOpen(true);
+                    }}
+                    className="px-3.5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl font-bold transition-colors cursor-pointer shadow-sm whitespace-nowrap"
+                  >
+                    + Drop Report
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3 text-xs">
-                <span className="text-[#64748B]">
-                  Showing <strong className="text-[#111827]">{incidents.length}</strong> total corridor markers
-                </span>
-                <button
-                  onClick={() => {
-                    setReportModalCoords(null);
-                    setIsReportModalOpen(true);
+              <div className="text-[#111827]">
+                <RoadMap
+                  incidents={incidents}
+                  onSelectIncident={(inc) => setSelectedIncident(inc)}
+                  onRequestReportAtCoord={handleMapClickCoord}
+                  selectedHighwayFilter={selectedHighwayOnMap}
+                  activeRoute={activeRouteForMap}
+                  onClearActiveRoute={() => setActiveRouteForMap(null)}
+                  onNavigateToNews={() => setActiveTab('news')}
+                  onAskAssistant={(query) => {
+                    setAiDrawerInitialQuery(query);
+                    setIsAiDrawerOpen(true);
                   }}
-                  className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg font-bold transition-colors cursor-pointer shadow-sm"
-                >
-                  + Drop Report
-                </button>
+                />
               </div>
             </div>
+          )}
 
-            <RoadMap
+          {/* TAB: DIRECT MESSAGES */}
+          {activeTab === 'messages' && (
+            <SocialMessagesView
+              threads={dmThreads}
+              selectedThreadId={selectedDmThreadId}
+              onSelectThread={handleSelectDmThread}
+              onSendMessage={handleSendDmMessage}
+              onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
+            />
+          )}
+
+          {/* TAB: COMMUNITIES & ROAD ALERTS */}
+          {(activeTab === 'communities' || activeTab === 'community') && (
+            <SocialCommunitiesView
+              communities={communities}
+              onToggleJoinCommunity={handleToggleJoinCommunity}
               incidents={incidents}
               onSelectIncident={(inc) => setSelectedIncident(inc)}
-              onRequestReportAtCoord={handleMapClickCoord}
-              selectedHighwayFilter={selectedHighwayOnMap}
-              activeRoute={activeRouteForMap}
-              onClearActiveRoute={() => setActiveRouteForMap(null)}
-              onNavigateToNews={() => setActiveTab('news')}
-              onAskAssistant={(query) => {
-                setAiDrawerInitialQuery(query);
-                setIsAiDrawerOpen(true);
+              onOpenReportModal={() => {
+                setReportModalCoords(null);
+                setIsReportModalOpen(true);
               }}
+              onVote={handleVote}
+              currentUserRole={userProfile.role}
+              defaultSubTab={activeTab === 'community' ? 'alerts' : 'groups'}
             />
-          </div>
-        )}
+          )}
 
-        {/* TAB 2: CORRIDORS & ROUTING */}
-        {activeTab === 'routes' && (
-          <RoutePlanner
-            incidents={incidents}
-            onSelectHighwayOnMap={handleSelectHighwayOnMap}
-            onOpenIncidentDetail={(inc) => setSelectedIncident(inc)}
-          />
-        )}
+          {/* TAB: CORRIDORS & TOLLS */}
+          {activeTab === 'routes' && (
+            <div className="text-[#111827]">
+              <RoutePlanner
+                incidents={incidents}
+                onSelectHighwayOnMap={handleSelectHighwayOnMap}
+                onOpenIncidentDetail={(inc) => setSelectedIncident(inc)}
+              />
+            </div>
+          )}
 
-        {/* TAB 3: ROAD NEWS & ADVISORIES (NEWSPAPER & GAZETTE) */}
-        {activeTab === 'news' && (
-          <NewsFeed
-            newsStories={newsStories}
-            bookmarkedIds={bookmarkedNewsIds}
-            onToggleBookmark={handleToggleBookmark}
+          {/* TAB: HIGHWAY GAZETTE (NEWS) */}
+          {activeTab === 'news' && (
+            <div className="text-[#111827]">
+              <NewsFeed
+                newsStories={newsStories}
+                bookmarkedIds={bookmarkedNewsIds}
+                onToggleBookmark={handleToggleBookmark}
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                onSelectHighway={(h) => handleSelectHighwayOnMap(h)}
+                onAddStoryComment={handleAddStoryComment}
+                currentUserProfile={userProfile}
+              />
+            </div>
+          )}
+
+          {/* TAB: SERVICES & TRANSPORT OPERATORS */}
+          {activeTab === 'operators' && (
+            <div className="text-[#111827]">
+              <TransportOperators onSelectRouteOnMap={handleSelectHighwayOnMap} />
+            </div>
+          )}
+
+          {/* TAB: PROFILE & SUBMISSIONS */}
+          {activeTab === 'profile' && (
+            <div className="text-[#111827]">
+              <ProfileView
+                userProfile={userProfile}
+                incidents={incidents}
+                bookmarkedNewsIds={bookmarkedNewsIds}
+                onUpdateProfile={handleUpdateProfile}
+                onSelectIncident={(inc) => setSelectedIncident(inc)}
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                onSelectHighwayOnMap={handleSelectHighwayOnMap}
+                onOpenReportModal={() => {
+                  setReportModalCoords(null);
+                  setIsReportModalOpen(true);
+                }}
+                onOpenDriverLoginModal={() => setIsDriverLoginModalOpen(true)}
+              />
+            </div>
+          )}
+
+          {/* TAB: MODERATOR OPERATIONS DESK */}
+          {activeTab === 'moderator' && (
+            <div className="text-[#111827]">
+              <ModeratorPortal
+                incidents={incidents}
+                auditLogs={auditLogs}
+                emergencyBanner={emergencyBanner}
+                onVerifyIncident={handleModeratorVerify}
+                onDispatchMedia={handleModeratorDispatchMedia}
+                onResolveIncident={handleModeratorResolve}
+                onDismissIncident={handleModeratorDismiss}
+                onChangeSeverity={handleModeratorChangeSeverity}
+                onUpdateEmergencyBanner={handleUpdateEmergencyBanner}
+                onOpenIncidentDetail={(inc) => setSelectedIncident(inc)}
+              />
+            </div>
+          )}
+
+          {/* TAB: NEWS MEDIA & PRESS PUBLISHER DESK */}
+          {activeTab === 'publisher' && (
+            <div className="text-[#111827]">
+              <NewsPublisherDashboard
+                newsStories={newsStories}
+                onPublishStory={handlePublishNewsStory}
+                onDeleteStory={handleDeleteNewsStory}
+                onUpdateStory={handleUpdateNewsStory}
+                incidents={incidents}
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                onOpenStoryDetail={() => setActiveTab('news')}
+                onAcknowledgeMediaDispatch={handleAcknowledgeMediaDispatch}
+                onMarkMediaDispatchPublished={handleMarkMediaDispatchPublished}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Right Rail (Desktop XL on Home Feed) */}
+        {activeTab === 'home' && (
+          <SocialRightRail
+            trendingTopics={INITIAL_TRENDING_TOPICS}
+            communities={communities}
+            activeHashtag={activeHashtag}
+            onSelectHashtag={setActiveHashtag}
+            onToggleJoinCommunity={handleToggleJoinCommunity}
+            onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)}
             onNavigateTab={(tab) => setActiveTab(tab)}
-            onSelectHighway={(h) => handleSelectHighwayOnMap(h)}
-            onAddStoryComment={handleAddStoryComment}
-            currentUserProfile={userProfile}
-          />
-        )}
-
-        {/* TAB 4: COMMUNITY REPORTS FEED */}
-        {activeTab === 'community' && (
-          <CommunityReportsView
-            incidents={incidents}
-            onSelectIncident={(inc) => setSelectedIncident(inc)}
-            onOpenReportModal={() => {
-              setReportModalCoords(null);
-              setIsReportModalOpen(true);
-            }}
-            onVote={handleVote}
-            currentUserRole={userProfile.role}
-          />
-        )}
-
-        {/* TAB 5: TRANSPORT OPERATORS */}
-        {activeTab === 'operators' && (
-          <TransportOperators
-            onSelectRouteOnMap={handleSelectHighwayOnMap}
-          />
-        )}
-
-        {/* TAB 6: PROFILE & SUBMISSIONS */}
-        {activeTab === 'profile' && (
-          <ProfileView
-            userProfile={userProfile}
-            incidents={incidents}
-            bookmarkedNewsIds={bookmarkedNewsIds}
-            onUpdateProfile={handleUpdateProfile}
-            onSelectIncident={(inc) => setSelectedIncident(inc)}
-            onNavigateTab={(tab) => setActiveTab(tab)}
-            onSelectHighwayOnMap={handleSelectHighwayOnMap}
-            onOpenReportModal={() => {
-              setReportModalCoords(null);
-              setIsReportModalOpen(true);
-            }}
-            onOpenDriverLoginModal={() => setIsDriverLoginModalOpen(true)}
-          />
-        )}
-
-        {/* TAB 7: MODERATOR OPERATIONS DESK */}
-        {activeTab === 'moderator' && (
-          <ModeratorPortal
-            incidents={incidents}
-            auditLogs={auditLogs}
-            emergencyBanner={emergencyBanner}
-            onVerifyIncident={handleModeratorVerify}
-            onDispatchMedia={handleModeratorDispatchMedia}
-            onResolveIncident={handleModeratorResolve}
-            onDismissIncident={handleModeratorDismiss}
-            onChangeSeverity={handleModeratorChangeSeverity}
-            onUpdateEmergencyBanner={handleUpdateEmergencyBanner}
-            onOpenIncidentDetail={(inc) => setSelectedIncident(inc)}
-          />
-        )}
-
-        {/* TAB 8: NEWS MEDIA & PRESS PUBLISHER DESK */}
-        {activeTab === 'publisher' && (
-          <NewsPublisherDashboard
-            newsStories={newsStories}
-            onPublishStory={handlePublishNewsStory}
-            onDeleteStory={handleDeleteNewsStory}
-            onUpdateStory={handleUpdateNewsStory}
-            incidents={incidents}
-            onNavigateTab={(tab) => setActiveTab(tab)}
-            onOpenStoryDetail={() => setActiveTab('news')}
-            onAcknowledgeMediaDispatch={handleAcknowledgeMediaDispatch}
-            onMarkMediaDispatchPublished={handleMarkMediaDispatchPublished}
           />
         )}
       </main>
 
       {/* Modals */}
-      <ReportHazardModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        onSubmit={handleReportSubmit}
-        currentUserRole={userProfile.role}
-        initialCoords={reportModalCoords}
+      <EmergencySosModal
+        isOpen={isEmergencyModalOpen}
+        onClose={() => setIsEmergencyModalOpen(false)}
+        userLocationLabel={userProfile.baseTown || 'Bulawayo'}
+        onDispatchSosAlert={handleDispatchSosAlert}
       />
 
-      <IncidentDetailModal
-        incident={selectedIncident}
-        onClose={() => setSelectedIncident(null)}
-        currentUserRole={userProfile.role}
-        onVote={handleVote}
-        onAddComment={handleAddComment}
-        onModeratorVerify={handleModeratorVerify}
-        onModeratorResolve={handleModeratorResolve}
-        onModeratorChangeSeverity={handleModeratorChangeSeverity}
-        onModeratorDismiss={handleModeratorDismiss}
-        onViewOnMap={(inc) => {
-          setSelectedHighwayOnMap(inc.highway.split(' ')[0]);
-          setActiveTab('map');
+      <RoadLinkFeatureModal
+        mode={featureModalMode}
+        onClose={() => setFeatureModalMode(null)}
+        isPremiumActive={isPremiumActive}
+        onActivatePremium={() => {
+          setIsPremiumActive(true);
+          showToast('RoadLink Plus Premium activated!');
         }}
       />
 
-      <SystemIntegrationsModal
-        isOpen={isIntegrationsModalOpen}
-        onClose={() => setIsIntegrationsModalOpen(false)}
-      />
+      <div className="text-[#111827]">
+        <ReportHazardModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          onSubmit={handleReportSubmit}
+          currentUserRole={userProfile.role}
+          initialCoords={reportModalCoords}
+        />
 
-      <NotificationCenterModal
-        isOpen={isNotificationsModalOpen}
-        onClose={() => setIsNotificationsModalOpen(false)}
-        notifications={notifications}
-        userProfile={userProfile}
-        onUpdateNotifications={handleUpdateNotifications}
-        onUpdateProfile={handleUpdateProfile}
-        onNavigateTab={(tab) => setActiveTab(tab)}
-      />
+        <IncidentDetailModal
+          incident={selectedIncident}
+          onClose={() => setSelectedIncident(null)}
+          currentUserRole={userProfile.role}
+          onVote={handleVote}
+          onAddComment={handleAddComment}
+          onModeratorVerify={handleModeratorVerify}
+          onModeratorResolve={handleModeratorResolve}
+          onModeratorChangeSeverity={handleModeratorChangeSeverity}
+          onModeratorDismiss={handleModeratorDismiss}
+          onViewOnMap={(inc) => {
+            setSelectedHighwayOnMap(inc.highway.split(' ')[0]);
+            setActiveTab('map');
+          }}
+        />
 
-      {/* Driver Persona & Identity Login Modal */}
-      <DriverLoginModal
-        isOpen={isDriverLoginModalOpen}
-        onClose={() => setIsDriverLoginModalOpen(false)}
-        currentUserProfile={userProfile}
-        onSelectDriverPersona={(updatedProfile) => {
-          handleUpdateProfile(updatedProfile);
-          const driverTitle =
-            updatedProfile.driverType === 'truck'
-              ? 'Heavy Freight & Long-Haul Trucker'
-              : updatedProfile.driverType === 'bus'
-              ? 'Intercity Coach & Transit Operator'
-              : 'Citizen Commuter & Private Motorist';
-          showToast(`Logged in as ${driverTitle}: ${updatedProfile.name}`);
-        }}
-        onNavigateTab={(tab) => setActiveTab(tab)}
-      />
+        <SystemIntegrationsModal
+          isOpen={isIntegrationsModalOpen}
+          onClose={() => setIsIntegrationsModalOpen(false)}
+        />
 
-      {/* Floating RoadLink AI Assistant Trigger Button */}
-      <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-5 z-[2500]">
+        <NotificationCenterModal
+          isOpen={isNotificationsModalOpen}
+          onClose={() => setIsNotificationsModalOpen(false)}
+          notifications={notifications}
+          userProfile={userProfile}
+          onUpdateNotifications={handleUpdateNotifications}
+          onUpdateProfile={handleUpdateProfile}
+          onNavigateTab={(tab) => setActiveTab(tab)}
+        />
+
+        <DriverLoginModal
+          isOpen={isDriverLoginModalOpen}
+          onClose={() => setIsDriverLoginModalOpen(false)}
+          currentUserProfile={userProfile}
+          onSelectDriverPersona={(updatedProfile) => {
+            handleUpdateProfile(updatedProfile);
+            const driverTitle =
+              updatedProfile.driverType === 'truck'
+                ? 'Heavy Freight & Long-Haul Trucker'
+                : updatedProfile.driverType === 'bus'
+                ? 'Intercity Coach & Transit Operator'
+                : 'Citizen Commuter & Private Motorist';
+            showToast(`Logged in as ${driverTitle}: ${updatedProfile.name}`);
+          }}
+          onNavigateTab={(tab) => setActiveTab(tab)}
+        />
+      </div>
+
+      {/* Route Assistant Trigger Button */}
+      <div className="fixed bottom-20 lg:bottom-6 right-4 sm:right-5 z-[2500]">
         <button
+          type="button"
           onClick={() => setIsAiDrawerOpen(!isAiDrawerOpen)}
-          className="px-3.5 py-2 sm:px-4 sm:py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-full shadow-2xl flex items-center gap-2 border border-blue-400/30 cursor-pointer transition-all hover:scale-105 active:scale-95"
-          aria-label="Open RoadLink AI Assistant"
+          className="px-3.5 py-2 sm:px-4 sm:py-2.5 bg-[#111C2E] hover:bg-[#1E293B] text-white font-semibold text-xs rounded-full shadow-xl flex items-center gap-2 border border-[#334155] cursor-pointer transition-colors"
+          aria-label="Open RoadLink Route Assistant"
         >
-          <Bot className="w-4 h-4 text-blue-100 animate-pulse" />
-          <span className="hidden xs:inline sm:inline">Ask RoadLink AI</span>
-          <span className="xs:hidden sm:hidden">AI</span>
-          <span className="w-2 h-2 rounded-full bg-[#F97316] animate-ping"></span>
+          <Bot className="w-4 h-4 text-[#60A5FA]" />
+          <span className="hidden sm:inline">Route Assistant</span>
+          <span className="sm:hidden">Help</span>
         </button>
       </div>
 
       {/* Floating RoadLink AI Assistant Drawer */}
       {isAiDrawerOpen && (
-        <div className="fixed inset-x-2 sm:inset-x-auto bottom-20 top-16 sm:top-auto sm:bottom-20 sm:right-6 sm:w-[500px] z-[3000] animate-fade-in shadow-2xl flex flex-col">
+        <div className="fixed inset-x-2 sm:inset-x-auto bottom-20 top-16 sm:top-auto sm:bottom-20 sm:right-6 sm:w-[500px] z-[3000] shadow-2xl flex flex-col text-[#111827]">
           <RoadAssistantChat
             userProfile={userProfile}
             incidents={incidents}
@@ -981,6 +1310,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         unverifiedCount={unverifiedCount}
+        unreadMessagesCount={unreadMessagesCount}
         onOpenDriverLoginModal={() => setIsDriverLoginModalOpen(true)}
         onOpenIntegrationsModal={() => setIsIntegrationsModalOpen(true)}
         onOpenNotificationsModal={() => setIsNotificationsModalOpen(true)}

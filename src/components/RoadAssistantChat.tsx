@@ -196,12 +196,12 @@ export const RoadAssistantChat: React.FC<RoadAssistantChatProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-white">RoadLink AI Assistant</span>
-              <span className="px-1.5 py-0.5 bg-[#2563EB]/20 text-[#60A5FA] text-[10px] font-mono font-semibold rounded border border-[#2563EB]/40">
+              <span className="font-semibold text-sm text-white">RoadLink Route Assistant</span>
+              <span className="px-1.5 py-0.5 bg-[#2563EB]/20 text-[#60A5FA] text-[10px] font-mono font-medium rounded border border-[#2563EB]/40">
                 LIVE MAPS
               </span>
             </div>
-            <p className="text-[11px] text-[#94A3B8]">Google-Style Highway Navigation & Corridor Intelligence</p>
+            <p className="text-[11px] text-[#94A3B8]">Zimbabwe Highway Navigation & Route Planning</p>
           </div>
         </div>
 
@@ -326,13 +326,13 @@ export const RoadAssistantChat: React.FC<RoadAssistantChatProps> = ({
         {isLoading && (
           <div className="flex gap-2.5 items-center text-xs text-[#94A3B8]">
             <div className="w-7 h-7 rounded-full bg-[#2563EB]/20 border border-[#2563EB]/40 text-[#60A5FA] flex items-center justify-center flex-shrink-0">
-              <Bot className="w-4 h-4 animate-pulse" />
+              <Bot className="w-4 h-4" />
             </div>
             <div className="bg-[#111C2E] border border-[#1E293B] rounded-2xl rounded-tl-none px-4 py-2.5 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-bounce"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-bounce [animation-delay:0.2s]"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-bounce [animation-delay:0.4s]"></span>
-              <span className="ml-1 text-[11px] text-slate-300 font-mono">Plotting route & live road telemetry...</span>
+              <span className="ml-1 text-[11px] text-slate-300 font-mono">Checking route & road alerts...</span>
             </div>
           </div>
         )}
